@@ -1,0 +1,372 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Fluxo de Material</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2" size-lg="6" offset-lg="3">
+        <form [formGroup]="form">
+          <!-- Receber Material -->
+          <div *ngIf="currentStep === 'inicio'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Início </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Receber Material da Secretaria</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('materialLacrado')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Material Lacrado -->
+          <div *ngIf="currentStep === 'materialLacrado'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Lacre </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Material Lacrado?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('verificarLacreConfere')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('verificarDeveSerLacrado')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Verificar Deve Ser Lacrado -->
+          <div *ngIf="currentStep === 'verificarDeveSerLacrado'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Lacre </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Deve ser Lacrado?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('inicio')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('fotoEmbalagem')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Verificar Lacre Confere -->
+          <div *ngIf="currentStep === 'verificarLacreConfere'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Lacre </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Lacre Confere com Siscrim?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('fotoLacre')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('inicio')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Foto NR Lacre -->
+          <div *ngIf="currentStep === 'fotoLacre'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Lacre </ion-card-subtitle>
+
+                <ion-item>
+                  <ion-button expand="full" (click)="tirarFotoLacre()">
+                    <ion-icon slot="start" name="camera"></ion-icon>
+                    Foto NR Lacre</ion-button
+                  >
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('fotoEmbalagem')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Foto Embalagem -->
+          <div *ngIf="currentStep === 'fotoEmbalagem'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Dados do Material </ion-card-subtitle>
+                <ion-item>
+                  <ion-button expand="full" (click)="tirarFotoEmbalagem()">
+                    <ion-icon slot="start" name="camera"></ion-icon>
+                    Foto da Embalagem
+                  </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Atualizar Cadastro Material</ion-label>
+                  <ion-input formControlName="atualizarCadastro" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Código EPOL</ion-label>
+                  <ion-input formControlName="codigoEpol" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Deslacrar Material</ion-label>
+                  <ion-input formControlName="deslacrarMaterial" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Etiquetar Material</ion-label>
+                  <ion-input formControlName="etiquetarMaterial" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-button expand="full" (click)="tirarFotoMaterial()">
+                    <ion-icon slot="start" name="camera"></ion-icon>
+                    Fotos Material com Etiqueta QRCODE EPOL
+                  </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Qtde SIM Cards e Memory Cards</ion-label>
+                  <ion-input formControlName="qtdeSimCards" type="number"></ion-input>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('verificarPosuiSimCard')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Verificar Possui SIM Card -->
+          <div *ngIf="currentStep === 'verificarPosuiSimCard'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> SIM CARD </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Possui SIM Card?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('simCard')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('estadoConservacao')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- SIM Card -->
+          <div *ngIf="currentStep === 'simCard'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> SIM CARD </ion-card-subtitle>
+                <ion-item>
+                  <ion-button expand="full" (click)="tirarFotoSimCard()">
+                    <ion-icon slot="start" name="camera"></ion-icon>
+                    Foto SIM CARD
+                  </ion-button>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Operadora</ion-label>
+                  <ion-input formControlName="operadora" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Realizar Extração UFED</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('estadoConservacao')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Estado de Conservação -->
+          <div *ngIf="currentStep === 'estadoConservacao'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Estado do Material </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Estado de Conservação</ion-label>
+                  <ion-input formControlName="estadoConservacao" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Defeitos Observados</ion-label>
+                  <ion-input formControlName="defeitosObservados" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Celular Recebido Ligado/Desligado</ion-label>
+                  <ion-input formControlName="celularRecebido" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Ligar Celular</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('verificarTelaFunciona')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Verificar Tela Funciona -->
+          <div *ngIf="currentStep === 'verificarTelaFunciona'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Tela </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Tela Funciona?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('telaFunciona')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('telaNaoFunciona')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Tela Não Funciona -->
+          <div *ngIf="currentStep === 'telaNaoFunciona'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Fabricante e Modelo </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Carregar Bateria</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Defeitos Observados</ion-label>
+                  <ion-input formControlName="defeitosObservados2" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Fabricante</ion-label>
+                  <ion-input formControlName="fabricante" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Modelo</ion-label>
+                  <ion-input formControlName="modelo" type="text"></ion-input>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('registrarSenhaFornecida')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Tela Funciona -->
+          <div *ngIf="currentStep === 'telaFunciona'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Fabricante e Modelo </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Registrar Percentual Bateria</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Carregar Bateria</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Fabricante</ion-label>
+                  <ion-input formControlName="fabricante" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Modelo</ion-label>
+                  <ion-input formControlName="modelo" type="text"></ion-input>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('verificarBloqueado')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Verificar Bloqueado -->
+          <div *ngIf="currentStep === 'verificarBloqueado'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Bloqueado </ion-card-subtitle>
+
+                <ion-item>
+                  <ion-label>Celular foi recebido bloqueado?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('verificarSenhaFornecida')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('modoAviao')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- VerificarSenhaFornecida -->
+          <div *ngIf="currentStep === 'verificarSenhaFornecida'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Detalhamento da Senha </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Senha fornecida?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('modoAviao')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('registrarSenhaFornecida')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Modo Avião -->
+          <div *ngIf="currentStep === 'modoAviao'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Modo Avião </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Registrar Modo Avião</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Colocar em Modo Avião</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Versão S.O.</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('registrarSenhaFornecida')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Registrar Senha Fornecida -->
+          <div *ngIf="currentStep === 'registrarSenhaFornecida'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Modo Avião </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Registrar Detalhes Senha</ion-label>
+                  <ion-input formControlName="detalhesSenha" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Registrar Número Máquina LAPED</ion-label>
+                  <ion-input formControlName="nrMaquinaLaped" type="text"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Realizar Extração INSEYES</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('verificarExtracaoOk')">Continuar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Verificar Extracao OK -->
+          <div *ngIf="currentStep === 'verificarExtracaoOk'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Verificar Extração </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Extração OK?</ion-label>
+                </ion-item>
+                <ion-button expand="full" color="success" (click)="nextStep('analiseExtracoes')">Sim</ion-button>
+                <ion-button expand="full" color="danger" (click)="nextStep('estadoConservacao')">Não</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Analise Extrações -->
+          <div *ngIf="currentStep === 'analiseExtracoes'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Verificar Extração </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>Abrir Extrações no Physical Analyzer</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Verificar Chats</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Verificar NR Assinante Operadora</ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Verificar Dados Usuário</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="finalizar()">Finalizar</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Listagem final -->
+          <div *ngIf="currentStep === 'listagemFinal'">
+            <ion-card>
+              <ion-card-content>
+                <ion-card-subtitle> Conclusão </ion-card-subtitle>
+                <ion-item>
+                  <ion-label>O exame foi finalizado!</ion-label>
+                </ion-item>
+                <ion-button expand="full" (click)="nextStep('inicio')">Iniciar outro exame</ion-button>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </form>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
