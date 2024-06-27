@@ -3,3 +3,27 @@ ion-card-subtitle {
   padding: 10px 0;
   text-align: center;
 }
+
+.lista-tarefas {
+  padding: 0px 0 10px 0px;
+
+  ion-item {
+    padding: 0;
+  }
+
+  ion-card {
+    margin-left: 0px;
+  }
+}
+
+.visible {
+  display: block;
+}
+
+.hidden {
+  display: none!important;
+}
+
+.concluida {
+  color:blue;
+}

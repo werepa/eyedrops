@@ -1,9 +1,11 @@
-import { Component } from "@angular/core"
-import { ReactiveFormsModule, FormBuilder, FormGroup } from "@angular/forms"
-import { IonicModule } from "@ionic/angular"
+import { Component, inject } from "@angular/core"
+import { ReactiveFormsModule } from "@angular/forms"
+import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
 import { addIcons } from "ionicons"
-import { camera } from "ionicons/icons"
+import { camera, checkmarkOutline } from "ionicons/icons"
+import { Exame, STEP, TAREFAS } from "../shared/models"
+import { AuthService } from "../services/auth.service"
 
 @Component({
   selector: "app-main",
@@ -13,40 +15,88 @@ import { camera } from "ionicons/icons"
   imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
 export class MainPage {
-  form: FormGroup
-  currentStep: string = "inicio"
+  private alertController = inject(AlertController)
+  step = STEP
+  tarefas = TAREFAS
+  currentStep: STEP = STEP.RECEBER_MATERIAL
 
-  constructor(private fb: FormBuilder) {
-    addIcons({ camera })
-    this.form = this.fb.group({
-      fotoLacre: [""],
-      fotoEmbalagem: [""],
-      atualizarCadastro: [""],
-      descricaoOk: [false],
-      codigoEpol: [""],
-      deslacrarMaterial: [""],
-      etiquetarMaterial: [""],
-      fotosMaterial: [""],
-      qtdeSimCards: [0],
-      operadora: [""],
-      estadoConservacao: [""],
-      defeitosObservados: [""],
-      celularRecebido: [""],
-      defeitosObservados2: [""],
-      fabricante: [""],
-      modelo: [""],
-      detalhesSenha: [""],
-      nrMaquinaLaped: [""],
-      versaoSO: [""],
-    })
+  constructor(private authService: AuthService, public exame: Exame) {
+    addIcons({ camera, checkmarkOutline })
+    this.iniciarFluxoMaterial()
   }
 
-  nextStep(step: string) {
+  iniciarFluxoMaterial() {
+    this.exame.reset()
+    this.exame.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+    this.currentStep = this.step.RECEBER_MATERIAL
+  }
+
+  nextStep(step: STEP) {
     this.currentStep = step
+  }
+
+  confirmaReiniciarProcesso() {
+    this.alertController
+      .create({
+        header: "Reiniciar",
+        message: "Deseja reiniciar o processamento deste material?",
+        buttons: [
+          {
+            text: "Cancelar",
+            role: "cancel",
+          },
+          {
+            text: "Reiniciar",
+            handler: () => {
+              this.iniciarFluxoMaterial()
+            },
+          },
+        ],
+      })
+      .then((alert) => alert.present())
+  }
+
+  receberMaterial() {
+    this.exame.setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
+    this.exame.setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
+    this.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
+  }
+
+  materialRecebidoLacrado(value: boolean) {
+    if (value) {
+      this.currentStep = this.step.VERIFICAR_LACRE_CONFERE
+    } else {
+      this.currentStep = this.step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO
+    }
+  }
+
+  registrarLacreConfere(value: boolean) {
+    if (value) {
+      this.exame.setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
+      this.currentStep = this.step.VERIFICAR_POSSUI_SIM_CARD
+    } else {
+      this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+    }
+  }
+
+  registrarExcecaoLacre() {
+    this.currentStep = this.step.VERIFICAR_POSSUI_SIM_CARD
+  }
+
+  registrarModoAviao(value: boolean) {
+    this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+  }
+
+  telaFuncionando(value: boolean) {
+    this.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
   }
 
   tirarFotoSimCard() {
     console.log("Foto do Sim Card")
+  }
+
+  tirarFotoMemoryCard() {
+    console.log("Foto do Memory Card")
   }
 
   tirarFotoLacre() {
@@ -62,7 +112,11 @@ export class MainPage {
   }
 
   finalizar() {
-    console.log("Formulário concluído:", this.form.value)
-    this.currentStep = "listagemFinal"
+    this.printExame()
+    this.currentStep = this.step.TAREFAS_CONCLUIDAS
+  }
+
+  printExame() {
+    console.log("Exame", this.exame)
   }
 }
