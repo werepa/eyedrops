@@ -1,0 +1,17 @@
+ion-card-subtitle {
+  background-color: #f7f7f7;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.foto-container {
+  position: relative;
+  display: inline-block; /* Ou 'block' dependendo do seu layout */
+}
+
+.excluir-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 4px; /* Ajuste conforme necessário */
+}

@@ -8,30 +8,23 @@
   <ion-grid>
     <ion-row>
       <ion-col size="12" size-sm="6" offset-lg="2" size-lg="4" class="lista-perguntas">
-        <!-- Foto NR Lacre -->
-        <ion-card>
-          <ion-card-content>
-            <ion-card-subtitle> Lacre </ion-card-subtitle>
+        <app-galeria-fotos
+          titulo="Fotos Embalagem"
+          [fotos]="fotosEmbalagem"
+          (tirarFoto)="onFotosEmbalagem($event)"
+          (excluirFoto)="onFotosEmbalagem($event)"
+        ></app-galeria-fotos>
 
-            <ion-item>
-              <ion-button expand="full" (click)="tirarFotoLacre()">
-                <ion-icon slot="start" name="camera"></ion-icon>
-                Foto NR Lacre</ion-button
-              >
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
+        <app-galeria-fotos
+          titulo="Fotos Lacre"
+          [fotos]="fotosLacre"
+          (tirarFoto)="onFotosLacre($event)"
+          (excluirFoto)="onFotosLacre($event)"
+        ></app-galeria-fotos>
 
-        <!-- Foto Embalagem -->
         <ion-card>
           <ion-card-content>
             <ion-card-subtitle> Dados do Material </ion-card-subtitle>
-            <ion-item>
-              <ion-button expand="full" (click)="tirarFotoEmbalagem()">
-                <ion-icon slot="start" name="camera"></ion-icon>
-                Foto da Embalagem
-              </ion-button>
-            </ion-item>
             <ion-item>
               <ion-label>Atualizar Cadastro Material</ion-label>
               <ion-input type="text"></ion-input>
@@ -330,7 +323,46 @@
             <ion-card-content>
               <ion-card-subtitle> Início </ion-card-subtitle>
               <ion-item>
-                <ion-label>Receber Material da Secretaria</ion-label>
+                <ion-label>Receber material da Secretaria</ion-label>
+                <ion-button slot="end" (click)="adicionarNrMaterial()">
+                  <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+              <form [formGroup]="form">
+                <div formArrayName="nrMateriais">
+                  <ion-item *ngFor="let control of nrMateriais.controls; let i = index">
+                    <ion-label position="stacked">Número Material</ion-label>
+                    <ion-input type="text" [formControlName]="i"></ion-input>
+                  </ion-item>
+                </div>
+              </form>
+              <ion-button expand="full" (click)="receberMaterial()">Continuar</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <ion-item
+          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
+          'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
+         }"
+        >
+          <ion-label>
+            <ion-icon
+              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
+              name="checkmark-outline"
+              slot="icon-only"
+            ></ion-icon>
+            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
+          </ion-label>
+        </ion-item>
+
+        <!-- Receber Material -->
+        <div *ngIf="currentStep === step.RECEBER_MATERIAL">
+          <ion-card>
+            <ion-card-content>
+              <ion-card-subtitle> Início </ion-card-subtitle>
+              <ion-item>
+                <ion-label>Fotografar material recebido da Secretaria</ion-label>
               </ion-item>
               <ion-button expand="full" (click)="receberMaterial()">Continuar</ion-button>
             </ion-card-content>

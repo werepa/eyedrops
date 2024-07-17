@@ -1,0 +1,25 @@
+<!-- Foto -->
+<ion-card>
+  <ion-card-content>
+    <ion-toolbar>
+      <ion-card-subtitle>{{ titulo }}</ion-card-subtitle>
+      <ion-buttons slot="end">
+        <ion-button (click)="onTirarFoto()">
+          <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+
+    <!-- Lista de Fotos -->
+    <ion-list class="ion-no-padding" *ngIf="fotos && fotos.length > 0">
+      <ion-item *ngFor="let foto of fotos; let i = index">
+        <div class="foto-container">
+          <img [src]="'data:image/jpeg;base64,' + foto" [alt]="titulo" />
+          <ion-button class="excluir-btn" (click)="onExcluirFoto(i)" fill="clear">
+            <ion-icon *ngIf="fotos.length > 1" slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+    </ion-list>
+  </ion-card-content>
+</ion-card>
