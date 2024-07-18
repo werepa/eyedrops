@@ -5,23 +5,161 @@
 </ion-header>
 
 <ion-content>
+  <ion-segment [(ngModel)]="selectedTab">
+    <ion-segment-button value="fluxo">
+      <ion-label>Tarefas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="dados">
+      <ion-label>Dados</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="fotos">
+      <ion-label>Fotos</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
   <ion-grid>
-    <ion-row>
-      <ion-col size="12" size-sm="6" offset-lg="2" size-lg="4" class="lista-perguntas">
-        <app-galeria-fotos
-          titulo="Fotos Embalagem"
-          [fotos]="fotosEmbalagem"
-          (tirarFoto)="onFotosEmbalagem($event)"
-          (excluirFoto)="onFotosEmbalagem($event)"
-        ></app-galeria-fotos>
+    <ion-row *ngIf="selectedTab==='fluxo'">
+      <ion-col size="12" size-sm="6" class="lista-fluxo">
+        <ion-item
+          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.RECEBER_MATERIAL).ativa,
+        'concluida': exame.getTarefa(tarefas.RECEBER_MATERIAL).concluida
+       }"
+        >
+          <ion-label>
+            <ion-icon
+              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.RECEBER_MATERIAL).concluida }"
+              name="checkmark-outline"
+              slot="icon-only"
+            ></ion-icon>
+            {{ exame.getTarefa(tarefas.RECEBER_MATERIAL).descricao }}
+          </ion-label>
+        </ion-item>
+      </ion-col>
+      <ion-col size="12" size-sm="6" class="lista-perguntas">
+        <!-- Receber Material -->
+        <div *ngIf="currentStep === step.RECEBER_MATERIAL">
+          <ion-card>
+            <ion-card-content>
+              <ion-card-subtitle> Início </ion-card-subtitle>
+              <ion-item>
+                <ion-label>Receber material na Secretaria</ion-label>
+                <ion-button slot="end" (click)="addNrMaterial()">
+                  <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+              <form [formGroup]="form">
+                <div formArrayName="nrMateriais">
+                  <ion-item *ngFor="let control of nrMateriais.controls; let i = index">
+                    <ion-label position="stacked">Número Material</ion-label>
+                    <ion-input type="text" [formControlName]="i"></ion-input>
+                  </ion-item>
+                </div>
+              </form>
+              <ion-button expand="full" (click)="receberMaterial()" [disabled]="!form.valid">Continuar</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
 
-        <app-galeria-fotos
-          titulo="Fotos Lacre"
-          [fotos]="fotosLacre"
-          (tirarFoto)="onFotosLacre($event)"
-          (excluirFoto)="onFotosLacre($event)"
-        ></app-galeria-fotos>
+        <ion-item
+          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
+        'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
+       }"
+        >
+          <ion-label>
+            <ion-icon
+              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
+              name="checkmark-outline"
+              slot="icon-only"
+            ></ion-icon>
+            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
+          </ion-label>
+        </ion-item>
 
+        <!-- Receber Material -->
+        <div *ngIf="currentStep === step.RECEBER_MATERIAL">
+          <ion-card>
+            <ion-card-content>
+              <ion-card-subtitle> Início </ion-card-subtitle>
+              <ion-item>
+                <ion-label>Fotografar material recebido da Secretaria</ion-label>
+              </ion-item>
+              <ion-button expand="full" (click)="receberMaterial()">Continuar</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <ion-item
+          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
+        'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
+       }"
+        >
+          <ion-label>
+            <ion-icon
+              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
+              name="checkmark-outline"
+              slot="icon-only"
+            ></ion-icon>
+            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
+          </ion-label>
+        </ion-item>
+
+        <!-- Material Lacrado -->
+        <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_LACRADO ">
+          <ion-card>
+            <ion-card-content>
+              <ion-card-subtitle> Lacre </ion-card-subtitle>
+              <ion-item>
+                <ion-label>Material Lacrado?</ion-label>
+              </ion-item>
+              <ion-button expand="full" color="success" (click)="materialRecebidoLacrado(true)">Sim</ion-button>
+              <ion-button expand="full" color="danger" (click)="materialRecebidoLacrado(false)">Não</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Verificar Deve Ser Lacrado -->
+        <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO ">
+          <ion-card>
+            <ion-card-content>
+              <ion-card-subtitle> Lacre </ion-card-subtitle>
+              <ion-item>
+                <ion-label>Deve ser Lacrado?</ion-label>
+              </ion-item>
+              <ion-button expand="full" color="success" (click)="iniciarFluxoMaterial()">Sim</ion-button>
+              <ion-button expand="full" color="danger" (click)="registrarExcecaoLacre()">Não</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Verificar Lacre Confere -->
+        <div *ngIf="currentStep === step.VERIFICAR_LACRE_CONFERE">
+          <ion-card>
+            <ion-card-content>
+              <ion-card-subtitle> Lacre </ion-card-subtitle>
+              <ion-item>
+                <ion-label>Lacre Confere com Siscrim?</ion-label>
+              </ion-item>
+              <ion-button expand="full" color="success" (click)="registrarLacreConfere(true)">Sim</ion-button>
+              <ion-button expand="full" color="danger" (click)="registrarLacreConfere(false)">Não</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- <ion-item
+        [ngClass]="{'visible': tarefa.ativa, 'hidden': !tarefa.ativa, 'lista-tarefas':true }"
+        *ngFor="let tarefa of exame.getTarefasAtivas()"
+      >
+        <ion-label>
+          <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+          {{ tarefa.descricao }}
+        </ion-label>
+      </ion-item> -->
+        <br />
+        <ion-button (click)="printExame()">Imprimir exame</ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="selectedTab==='dados'">
+      <ion-col size="12" size-sm="6" offset-sm="3" class="dados">
         <ion-card>
           <ion-card-content>
             <ion-card-subtitle> Dados do Material </ion-card-subtitle>
@@ -300,143 +438,36 @@
           </ion-card>
         </div>
       </ion-col>
+    </ion-row>
+    <ion-row *ngIf="selectedTab==='fotos'">
+      <ion-col size="12" size-sm="6" offset-sm="3" class="fotos">
+        <app-galeria-fotos
+          titulo="Fotos Embalagem"
+          [fotos]="fotosEmbalagem"
+          (tirarFoto)="onFotosEmbalagem($event)"
+          (excluirFoto)="onFotosEmbalagem($event)"
+        />
 
-      <ion-col size="12" size-sm="6" size-lg="4" class="lista-tarefas">
-        <ion-item
-          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.RECEBER_MATERIAL).ativa,
-          'concluida': exame.getTarefa(tarefas.RECEBER_MATERIAL).concluida
-         }"
-        >
-          <ion-label>
-            <ion-icon
-              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.RECEBER_MATERIAL).concluida }"
-              name="checkmark-outline"
-              slot="icon-only"
-            ></ion-icon>
-            {{ exame.getTarefa(tarefas.RECEBER_MATERIAL).descricao }}
-          </ion-label>
-        </ion-item>
+        <app-galeria-fotos
+          titulo="Fotos Lacre"
+          [fotos]="fotosLacre"
+          (tirarFoto)="onFotosLacre($event)"
+          (excluirFoto)="onFotosLacre($event)"
+        />
 
-        <!-- Receber Material -->
-        <div *ngIf="currentStep === step.RECEBER_MATERIAL">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Início </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Receber material da Secretaria</ion-label>
-                <ion-button slot="end" (click)="adicionarNrMaterial()">
-                  <ion-icon slot="icon-only" name="add-outline"></ion-icon>
-                </ion-button>
-              </ion-item>
-              <form [formGroup]="form">
-                <div formArrayName="nrMateriais">
-                  <ion-item *ngFor="let control of nrMateriais.controls; let i = index">
-                    <ion-label position="stacked">Número Material</ion-label>
-                    <ion-input type="text" [formControlName]="i"></ion-input>
-                  </ion-item>
-                </div>
-              </form>
-              <ion-button expand="full" (click)="receberMaterial()">Continuar</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
+        <app-galeria-fotos
+          titulo="Fotos SIM Cards"
+          [fotos]="fotosSimCards"
+          (tirarFoto)="onFotosSimCards($event)"
+          (excluirFoto)="onFotosSimCards($event)"
+        />
 
-        <ion-item
-          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
-          'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
-         }"
-        >
-          <ion-label>
-            <ion-icon
-              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
-              name="checkmark-outline"
-              slot="icon-only"
-            ></ion-icon>
-            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
-          </ion-label>
-        </ion-item>
-
-        <!-- Receber Material -->
-        <div *ngIf="currentStep === step.RECEBER_MATERIAL">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Início </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Fotografar material recebido da Secretaria</ion-label>
-              </ion-item>
-              <ion-button expand="full" (click)="receberMaterial()">Continuar</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <ion-item
-          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
-          'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
-         }"
-        >
-          <ion-label>
-            <ion-icon
-              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
-              name="checkmark-outline"
-              slot="icon-only"
-            ></ion-icon>
-            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
-          </ion-label>
-        </ion-item>
-
-        <!-- Material Lacrado -->
-        <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_LACRADO ">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Lacre </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Material Lacrado?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="materialRecebidoLacrado(true)">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="materialRecebidoLacrado(false)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Verificar Deve Ser Lacrado -->
-        <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO ">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Lacre </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Deve ser Lacrado?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="iniciarFluxoMaterial()">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="registrarExcecaoLacre()">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Verificar Lacre Confere -->
-        <div *ngIf="currentStep === step.VERIFICAR_LACRE_CONFERE">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Lacre </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Lacre Confere com Siscrim?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="registrarLacreConfere(true)">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="registrarLacreConfere(false)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- <ion-item
-          [ngClass]="{'visible': tarefa.ativa, 'hidden': !tarefa.ativa, 'lista-tarefas':true }"
-          *ngFor="let tarefa of exame.getTarefasAtivas()"
-        >
-          <ion-label>
-            <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
-            {{ tarefa.descricao }}
-          </ion-label>
-        </ion-item> -->
-        <br />
-        <ion-button (click)="printExame()">Imprimir exame</ion-button>
+        <app-galeria-fotos
+          titulo="Fotos Memory Card"
+          [fotos]="fotosMemoryCard"
+          (tirarFoto)="onFotosMemoryCard($event)"
+          (excluirFoto)="onFotosMemoryCard($event)"
+        />
       </ion-col>
     </ion-row>
   </ion-grid>

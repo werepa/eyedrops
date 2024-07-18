@@ -1,5 +1,14 @@
 import { Component, enableProdMode, inject, OnInit } from "@angular/core"
-import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms"
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+} from "@angular/forms"
 import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
 import { addIcons } from "ionicons"
@@ -29,8 +38,11 @@ export class MainPage implements OnInit {
   step = STEP
   tarefas = TAREFAS
   currentStep: STEP = STEP.RECEBER_MATERIAL
-  fotosEmbalagem: string[] = [] // Array para armazenar as imagens capturadas
-  fotosLacre: string[] = [] // Array para armazenar as imagens capturadas
+  fotosEmbalagem: string[] = []
+  fotosLacre: string[] = []
+  fotosSimCards: string[] = []
+  fotosMemoryCard: string[] = []
+  selectedTab = "fluxo"
 
   constructor(private authService: AuthService, public exame: Exame, private fb: FormBuilder) {
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline })
@@ -39,10 +51,9 @@ export class MainPage implements OnInit {
 
   ngOnInit() {
     this.form = this.fb.group({
-      nrMateriais: this.fb.array([]),
+      nrMateriais: this.fb.array([], nrMaterialValidator),
     })
-    // Adicione um controle para cada item existente em nrMateriais
-    this.nrMateriais.controls.forEach(() => this.addNrMaterial())
+    this.addNrMaterial()
   }
 
   get nrMateriais() {
@@ -50,7 +61,8 @@ export class MainPage implements OnInit {
   }
 
   addNrMaterial() {
-    this.nrMateriais.push(this.fb.control(""))
+    const nrMateriais = this.form.get("nrMateriais") as FormArray
+    nrMateriais.push(this.fb.control(""))
   }
 
   async onFotosEmbalagem(fotos: string[]) {
@@ -61,8 +73,12 @@ export class MainPage implements OnInit {
     this.fotosLacre = fotos
   }
 
-  adicionarNrMaterial() {
-    this.nrMateriais.push("")
+  async onFotosSimCards(fotos: string[]) {
+    this.fotosSimCards = fotos
+  }
+
+  async onFotosMemoryCard(fotos: string[]) {
+    this.fotosMemoryCard = fotos
   }
 
   iniciarFluxoMaterial() {
@@ -150,5 +166,33 @@ export class MainPage implements OnInit {
 
   printExame() {
     console.log("Exame", this.exame)
+  }
+}
+
+// Validador personalizado para verificar se todos os campos estão preenchidos
+function allFilledValidator(control: AbstractControl): ValidationErrors | null {
+  // Verifica se o controle é um FormArray
+  if (control instanceof FormArray) {
+    // Usa o método every para verificar se todos os controles têm um valor não vazio
+    const allFilled = control.controls.every((c) => c.value.trim() !== "")
+    // Se todos os campos estiverem preenchidos, retorna null (sem erro)
+    // Caso contrário, retorna um objeto de erro indicando que nem todos os campos estão preenchidos
+    return allFilled ? null : { notAllFilled: true }
+  }
+  // Se o controle não for um FormArray, retorna null por padrão
+  return null
+}
+
+// Validador personalizado para verificar o formato dddd/dddd
+function nrMaterialValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value
+  const regex = /(^(0*[1-9]\d{0,3}))\/(20(2[0-9]|3[0-9]|4[0-9]|50)|[2-4][0-9]|50)$/
+  // Verifica se o valor do controle corresponde à expressão regular
+  if (regex.test(value)) {
+    // Se corresponder, retorna null (sem erro)
+    return null
+  } else {
+    // Se não corresponder, retorna um objeto de erro
+    return { invalidFormat: true }
   }
 }
