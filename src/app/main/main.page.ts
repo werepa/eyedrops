@@ -7,6 +7,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
   ValidationErrors,
+  Validators,
 } from "@angular/forms"
 import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
@@ -42,6 +43,7 @@ export class MainPage implements OnInit {
   selectedTab = "fluxo"
   listaExames: Exame[] = []
   materialAtual = ""
+  materialAtualUF = ""
 
   constructor(private authService: AuthService, private fb: FormBuilder) {
     this.usuarioAtual = this.authService.getUsuarioAtual()
@@ -50,37 +52,46 @@ export class MainPage implements OnInit {
 
   ngOnInit() {
     this.form = this.fb.group({
-      nrMateriais: this.fb.array([], nrMaterialValidator),
+      materiais: this.fb.array([], [Validators.minLength(1)]),
     })
-    this.addNrMaterial()
+    this.addMaterialControl()
   }
 
-  onChangeMaterialAtual(nrMaterial: string) {
+  onChangeMaterialAtual(nrMaterial: string, uf?: string) {
+    if (!uf) {
+      this.materialAtualUF = this.usuarioAtual.uf
+    }
     this.materialAtual = nrMaterial
     this.getExameAtual().setUsuarioAtual(this.usuarioAtual)
   }
 
-  get nrMateriais() {
-    return this.form.get("nrMateriais") as FormArray
+  get listaMateriais() {
+    return this.form.get("materiais") as FormArray
   }
 
-  addNrMaterial() {
-    const nrMateriais = this.form.get("nrMateriais") as FormArray
-    nrMateriais.push(this.fb.control(""))
+  addMaterialControl() {
+    const materialArray = this.form.get("materiais") as FormArray
+    const newMaterialGroup = this.fb.group({
+      numero: ["", nrMaterialValidator],
+      uf: [this.usuarioAtual.uf, Validators.required],
+    })
+    materialArray.push(newMaterialGroup)
   }
 
-  getExame(nrMaterial: string): Exame {
-    let exame = this.listaExames.find((exame) => exame.material.numero === nrMaterial)
+  getExame(nrMaterial: string, uf?: string): Exame {
+    if (!uf) {
+      uf = this.usuarioAtual.uf
+    }
+    let exame = this.listaExames.find((exame) => exame.material.numero === nrMaterial && exame.material.uf === uf)
     if (!exame) {
       exame = new Exame(new Material(nrMaterial), this.usuarioAtual)
       this.listaExames.push(exame)
-      this.onChangeMaterialAtual(nrMaterial)
     }
     return exame
   }
 
   getExameAtual(): Exame {
-    const exame = this.getExame(this.materialAtual)
+    const exame = this.getExame(this.materialAtual, this.materialAtualUF)
     exame.setUsuarioAtual(this.usuarioAtual)
     return exame
   }
@@ -105,16 +116,19 @@ export class MainPage implements OnInit {
     this.getExameAtual().material.fotos.memoryCard = fotos
   }
 
-  getNrMateriaisControls(): AbstractControl[] {
-    const nrMateriais = this.form.get("nrMateriais") as FormArray
-    return nrMateriais.controls
+  getMateriaisControls(): AbstractControl[] {
+    const listaMateriais = this.form.get("materiais") as FormArray
+    return listaMateriais.controls
   }
 
   iniciarFluxoMaterial() {
-    this.getNrMateriaisControls().forEach((nrMaterial) => {
-      const exame = this.getExame(nrMaterial.value)
+    this.getMateriaisControls().forEach((material) => {
+      const materialNumero = material.get("numero")?.value
+      const materialUf = material.get("uf")?.value
+      const exame = this.getExame(materialNumero, materialUf)
       exame.reset()
       exame.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+      this.onChangeMaterialAtual(exame.material.numero, exame.material.uf)
     })
     this.currentStep = this.step.RECEBER_MATERIAL
   }
@@ -220,7 +234,7 @@ function allFilledValidator(control: AbstractControl): ValidationErrors | null {
 // Validador personalizado para verificar o formato dddd/dddd
 function nrMaterialValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value
-  const regex = /(^(0*[1-9]\d{0,3}))\/(20(2[0-9]|3[0-9]|4[0-9]|50)|[2-4][0-9]|50)$/
+  const regex = /(^(0*[1-9]\d{0,3}))(\/(20(2[0-9]|3[0-9]|4[0-9]|50)|[2-4][0-9]|50))?$/
   // Verifica se o valor do controle corresponde à expressão regular
   if (regex.test(value)) {
     // Se corresponder, retorna null (sem erro)

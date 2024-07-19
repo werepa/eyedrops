@@ -14,6 +14,7 @@ describe("MainPage", () => {
       new Usuario({
         codigo: "002",
         nome: "Usuario 2",
+        uf: "GO",
         perfil: "Perito",
       }),
   }
@@ -26,7 +27,10 @@ describe("MainPage", () => {
     fixture = TestBed.createComponent(MainPage)
     component = fixture.componentInstance
     component.ngOnInit()
-    exame = new Exame(new Material("123/2024"), new Usuario({ codigo: "001", nome: "Usuario 1", perfil: "Perito" }))
+    exame = new Exame(
+      new Material("123/2024"),
+      new Usuario({ codigo: "001", nome: "Usuario 1", uf: "GO", perfil: "Perito" })
+    )
   })
 
   it("should create", () => {
@@ -40,7 +44,7 @@ describe("MainPage", () => {
   })
 
   it("should create exame when calling getExame if not exists", () => {
-    const nrMaterial = "123/24"
+    const nrMaterial = "0123/2024"
     expect(component.listaExames.length).toBe(0)
     const exame = component.getExame(nrMaterial)
     expect(exame).toBeDefined()
@@ -51,7 +55,7 @@ describe("MainPage", () => {
   })
 
   it("should return the correct exame when calling getExame", () => {
-    const nrMaterial1 = "123/24"
+    const nrMaterial1 = "0123/2024"
     const nrMaterial2 = "456/24"
     component.getExame(nrMaterial1)
     component.getExame(nrMaterial2)
@@ -61,7 +65,7 @@ describe("MainPage", () => {
   })
 
   it("should update exame usuarioAtual when changing materialAtual", () => {
-    const nrMaterial1 = "123/24"
+    const nrMaterial1 = "0123/2024"
     const nrMaterial2 = "456/24"
     component.getExame(nrMaterial1)
     component.getExame(nrMaterial2)
@@ -71,14 +75,14 @@ describe("MainPage", () => {
   })
 
   it("should add a new material form control when calling addNrMaterial", () => {
-    let nrMateriais = component.getNrMateriaisControls()
+    let nrMateriais = component.getMateriaisControls()
     expect(nrMateriais.length).toBe(1)
-    component.addNrMaterial()
-    expect(component.getNrMateriaisControls().length).toBe(2)
+    component.addMaterialControl()
+    expect(component.getMateriaisControls().length).toBe(2)
   })
 
   it("should return the current exame when calling getExameAtual", () => {
-    const nrMaterial1 = "123/24"
+    const nrMaterial1 = "0123/2024"
     const nrMaterial2 = "456/24"
     component.getExame(nrMaterial1)
     component.getExame(nrMaterial2)
@@ -89,7 +93,7 @@ describe("MainPage", () => {
   })
 
   it("should update exame fotosEmbalagem when calling onFotosEmbalagem", async () => {
-    const nrMaterial = "123/24"
+    const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
@@ -99,7 +103,7 @@ describe("MainPage", () => {
   })
 
   it("should update exame fotosLacre when calling onFotosLacre", async () => {
-    const nrMaterial = "123/24"
+    const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
@@ -109,7 +113,7 @@ describe("MainPage", () => {
   })
 
   it("should update exame fotosMaterial when calling onFotosMaterial", async () => {
-    const nrMaterial = "123/24"
+    const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
@@ -119,7 +123,7 @@ describe("MainPage", () => {
   })
 
   it("should update exame fotosSimCards when calling onFotosSimCards", async () => {
-    const nrMaterial = "123/24"
+    const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
@@ -129,7 +133,7 @@ describe("MainPage", () => {
   })
 
   it("should update exame fotosMemoryCard when calling onFotosMemoryCard", async () => {
-    const nrMaterial = "123/24"
+    const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
@@ -139,7 +143,7 @@ describe("MainPage", () => {
   })
 
   it("should return an array of AbstractControl when calling getNrMateriaisControls", () => {
-    const nrMateriaisControls = component.getNrMateriaisControls()
+    const nrMateriaisControls = component.getMateriaisControls()
     expect(nrMateriaisControls).toBeDefined()
     expect(nrMateriaisControls.length).toBe(1)
   })

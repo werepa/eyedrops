@@ -11,6 +11,7 @@ export class AuthService {
     this.usuarioAtual = new Usuario({
       codigo: "9780",
       nome: "Weber Rener Paiva",
+      uf: "GO",
       perfil: "Perito",
     })
   }
