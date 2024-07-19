@@ -11,6 +11,7 @@ import {
 } from "@angular/forms"
 import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
+import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout"
 import { addIcons } from "ionicons"
 import { addOutline, camera, cameraOutline, checkmarkOutline, trash, trashOutline } from "ionicons/icons"
 import { STEP, TAREFAS } from "../models/listas"
@@ -35,6 +36,7 @@ if (environment.production) {
 })
 export class MainPage implements OnInit {
   private alertController = inject(AlertController)
+  isSmallScreen = false
   usuarioAtual: Usuario
   form: FormGroup = new FormGroup([])
   step = STEP
@@ -45,12 +47,15 @@ export class MainPage implements OnInit {
   materialAtual = ""
   materialAtualUF = ""
 
-  constructor(private authService: AuthService, private fb: FormBuilder) {
+  constructor(private authService: AuthService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
     this.usuarioAtual = this.authService.getUsuarioAtual()
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline })
   }
 
   ngOnInit() {
+    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe((result) => {
+      this.isSmallScreen = result.matches
+    })
     this.form = this.fb.group({
       materiais: this.fb.array([], [Validators.minLength(1)]),
     })
@@ -98,22 +103,39 @@ export class MainPage implements OnInit {
 
   async onFotosEmbalagem(fotos: string[]) {
     this.getExameAtual().material.fotos.embalagem = fotos
+    if (this.getExameAtual().material.fotos.embalagem.length > 0) {
+      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_EMBALAGEM)
+    }
   }
 
   async onFotosLacre(fotos: string[]) {
     this.getExameAtual().material.fotos.lacre = fotos
+    if (this.getExameAtual().material.fotos.lacre.length > 0) {
+      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_NR_LACRE)
+    }
   }
 
   async onFotosMaterial(fotos: string[]) {
     this.getExameAtual().material.fotos.detalhes = fotos
+    if (this.getExameAtual().material.fotos.detalhes.length > 0) {
+      this.getExameAtual().setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL)
+      this.getExameAtual().setTarefaConcluida(this.tarefas.ETIQUETAR_MATERIAL)
+      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
+    }
   }
 
   async onFotosSimCards(fotos: string[]) {
     this.getExameAtual().material.fotos.simCards = fotos
+    if (this.getExameAtual().material.fotos.simCards.length > 0) {
+      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_SIM_CARD)
+    }
   }
 
   async onFotosMemoryCard(fotos: string[]) {
     this.getExameAtual().material.fotos.memoryCard = fotos
+    if (this.getExameAtual().material.fotos.memoryCard.length > 0) {
+      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_MEMORY_CARD)
+    }
   }
 
   getMateriaisControls(): AbstractControl[] {
@@ -159,7 +181,6 @@ export class MainPage implements OnInit {
   }
 
   receberMaterial() {
-    console.log("form", this.form)
     this.iniciarFluxoMaterial()
     this.getExameAtual().setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
     this.getExameAtual().setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
@@ -174,9 +195,23 @@ export class MainPage implements OnInit {
     }
   }
 
+  // FOTOGRAFAR_NR_LACRE = 2,
+  // FOTOGRAFAR_EMBALAGEM = 3,
+  // ATUALIZAR_CADASTRO_MATERIAL = 4,
+  // REGISTRAR_CODIGO_EPOL = 5,
+  // DESLACRAR_MATERIAL = 6,
+  // ETIQUETAR_MATERIAL = 7,
+  // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
   registrarLacreConfere(value: boolean) {
     if (value) {
       this.getExameAtual().setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_NR_LACRE)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_EMBALAGEM)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_CODIGO_EPOL)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.DESLACRAR_MATERIAL)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.ETIQUETAR_MATERIAL)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
       this.currentStep = this.step.VERIFICAR_POSSUI_SIM_CARD
     } else {
       this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
@@ -214,6 +249,12 @@ export class MainPage implements OnInit {
 
   printExame() {
     console.log("Exame", this.getExameAtual().imprimirJson())
+  }
+
+  getRange(): number[] {
+    // Divida por 2 para contar apenas os valores do enum
+    const tarefasLength = Object.keys(this.tarefas).length / 2
+    return Array.from({ length: tarefasLength }, (_, i) => i)
   }
 }
 

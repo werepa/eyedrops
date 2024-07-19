@@ -177,6 +177,7 @@ export class Exame {
       },
     ]
 
+    this._tarefas = []
     detalhesTarefas.forEach((tarefa) =>
       this._tarefas.push({
         codigo: tarefa.codigo,

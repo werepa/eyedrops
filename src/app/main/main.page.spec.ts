@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing"
 import { MainPage } from "./main.page"
-import { STEP } from "../models/listas"
+import { STEP, TAREFAS } from "../models/listas"
 import { Exame, Material, Usuario } from "../models"
 import { AuthService } from "../services/auth.service"
 
@@ -33,6 +33,15 @@ describe("MainPage", () => {
     )
   })
 
+  function populateMaterialFields() {
+    component.addMaterialControl()
+    component.getMateriaisControls().forEach((material) => {
+      material.get("numero")?.setValue("0123/2024")
+      material.get("uf")?.setValue("GO")
+    })
+    component.iniciarFluxoMaterial()
+  }
+
   it("should create", () => {
     expect(component).toBeTruthy()
   })
@@ -41,6 +50,7 @@ describe("MainPage", () => {
     expect(component.materialAtual).toBe("")
     expect(component.listaExames).toEqual([])
     expect(component.currentStep).toEqual(STEP.RECEBER_MATERIAL)
+    expect(component.usuarioAtual).toBeDefined()
   })
 
   it("should create exame when calling getExame if not exists", () => {
@@ -154,17 +164,59 @@ describe("MainPage", () => {
     expect(component.currentStep).toBe(nextStep)
   })
 
-  // it("should receive the material when calling receberMaterial", () => {
-  //   component.receberMaterial()
-  //   expect(component.currentStep).toBe(STEP.REGISTRAR_LACRE)
-  // })
+  it("should initialize the material flow", () => {
+    populateMaterialFields()
+    expect(component.currentStep).toBe(STEP.RECEBER_MATERIAL)
+    expect(component.listaExames.length).toBe(1)
+    component.listaExames.forEach((exame) => {
+      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
+    })
+    expect(component.materialAtual).toBe("0123/2024")
+  })
 
-  //   it("should update exame materialRecebidoLacrado when calling materialRecebidoLacrado", () => {
-  //     const value = true
-  //     component.materialRecebidoLacrado(value)
-  //     const exameAtual = component.getExameAtual()
-  //     expect(exameAtual.materialRecebidoLacrado).toBe(value)
-  //   })
+  // CONFERIR_LACRE = 1
+  it("should update tarefas after RECEBER_MATERIAL", () => {
+    populateMaterialFields()
+    component.receberMaterial()
+    const exameAtual = component.getExameAtual()
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+  })
+
+  // FOTOGRAFAR_NR_LACRE = 2,
+  // FOTOGRAFAR_EMBALAGEM = 3,
+  // ATUALIZAR_CADASTRO_MATERIAL = 4,
+  // REGISTRAR_CODIGO_EPOL = 5,
+  // DESLACRAR_MATERIAL = 6,
+  // ETIQUETAR_MATERIAL = 7,
+  // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
+  it("should update tarefas after RECEBER_MATERIAL", () => {
+    populateMaterialFields()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    const exameAtual = component.getExameAtual()
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).concluida).toBe(false)
+  })
 
   //   it("should update exame registrarLacreConfere when calling registrarLacreConfere", () => {
   //     const value = true

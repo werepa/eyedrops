@@ -16,6 +16,7 @@ import { cameraOutline, trashOutline } from "ionicons/icons"
 export class GaleriaFotosComponent {
   @Input() titulo: string = "Galeria de Fotos"
   @Input() fotos: string[] = []
+  @Input() mostrar: boolean = false
   @Output() tirarFoto = new EventEmitter<string[]>()
   @Output() excluirFoto = new EventEmitter<string[]>()
 
