@@ -1,87 +1,11 @@
-import { AuthService } from "../services/auth.service"
+import { Material, Usuario } from "."
+import { STEP, Tarefa, TAREFAS } from "./listas"
 
-export enum STEP {
-  RECEBER_MATERIAL = 0,
-  VERIFICAR_MATERIAL_LACRADO = 1,
-  VERIFICAR_MATERIAL_DEVE_SER_LACRADO = 2,
-  VERIFICAR_LACRE_CONFERE = 3,
-  VERIFICAR_POSSUI_SIM_CARD = 4,
-  VERIFICAR_FUNCIONAMENTO_TELA = 5,
-  VERIFICAR_TELEFONE_BLOQUEADO = 6,
-  VERIFICAR_FORNECIMENTO_SENHA = 7,
-  VERIFICAR_MODO_AVIAO = 8,
-  VERIFICAR_EXTRACAO_OK = 9,
-  TAREFAS_CONCLUIDAS = 10,
-}
-
-export enum TAREFAS {
-  RECEBER_MATERIAL = 0,
-  CONFERIR_LACRE = 1,
-  FOTOGRAFAR_NR_LACRE = 2,
-  FOTOGRAFAR_EMBALAGEM = 3,
-  ATUALIZAR_CADASTRO_MATERIAL = 4,
-  REGISTRAR_CODIGO_EPOL = 5,
-  DESLACRAR_MATERIAL = 6,
-  ETIQUETAR_MATERIAL = 7,
-  FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
-  REGISTRAR_QTDE_SIM_CARDS = 9,
-  REGISTRAR_OPERADORA_SIM_CARD = 10,
-  FOTOGRAFAR_SIM_CARD = 11,
-  EXTRACAO_SIM_CARD = 12,
-  REGISTRAR_QTDE_MEMORY_CARDS = 13,
-  FOTOGRAFAR_MEMORY_CARD = 14,
-  EXTRACAO_MEMORY_CARD = 15,
-  REGISTRAR_ESTADO_CONSERVACAO = 16,
-  REGISTRAR_DEFEITOS_OBSERVADOS = 17,
-  REGISTRAR_APARELHO_RECEBIDO_LIGADO = 18,
-  CARREGAR_BATERIA = 19,
-  LIGAR_APARELHO = 20,
-  REGISTRAR_FUNCIONAMENTO_TELA = 21,
-  REGISTRAR_FABRICANTE_MODELO = 22,
-  REGISTRAR_PERCENTUAL_BATERIA = 23,
-  REGISTRAR_APARELHO_BLOQUEADO = 24,
-  REGISTRAR_DETALHES_SENHA = 25,
-  REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO = 26,
-  COLOCAR_APARELHO_MODO_AVIAO = 27,
-  REGISTRAR_VERSAO_SISTEMA_OPERACIONAL = 28,
-  REALIZAR_PROCEDIMENTOS_DESENVOLVEDOR = 29,
-  REGISTRAR_NR_MAQUINA_LAPED = 30,
-  REALIZAR_EXTRACAO_INSEYETS = 31,
-  REGISTRAR_EXTRACAO_INSEYETS_OK = 32,
-  REGISTRAR_EXTRACAO_CHATS = 33,
-  REGISTRAR_NR_TELEFONE_OPERADORA = 34,
-  REGISTRAR_DADOS_USUARIO = 35,
-  EXECUTAR_IPED = 36,
-  REGISTRAR_IPED_OK = 37,
-  REGISTRAR_ZIP_OK = 38,
-  MOVER_ZIP_DIRETORIO_ENTREGA = 39,
-  FINALIZAR_EXAME = 40,
-}
-
-export type Log = {
-  usuarioCodigo: string
-  usuarioNome: string
-  objetoAnterior: string
-  data: Date
-}
-
-export type Tarefa = {
-  codigo: TAREFAS
-  descricao: string
-  historico: Log[]
-  ativa: boolean
-  concluida: boolean
-}
-
-import { Injectable } from "@angular/core"
-
-@Injectable({
-  providedIn: "root",
-})
 export class Exame {
-  private tarefas: Tarefa[] = []
+  private _tarefas: Tarefa[] = []
+  private _currentStep: STEP = STEP.RECEBER_MATERIAL
 
-  constructor(private authService: AuthService) {
+  constructor(private _material: Material, private _usuarioAtual: Usuario) {
     this.reset()
   }
 
@@ -254,7 +178,7 @@ export class Exame {
     ]
 
     detalhesTarefas.forEach((tarefa) =>
-      this.tarefas.push({
+      this._tarefas.push({
         codigo: tarefa.codigo,
         descricao: tarefa.descricao,
         historico: [],
@@ -264,8 +188,16 @@ export class Exame {
     )
   }
 
-  getTarefas(): Tarefa[] {
-    return this.tarefas
+  get material(): Material {
+    return this._material
+  }
+
+  get tarefas(): Tarefa[] {
+    return this._tarefas
+  }
+
+  get currentStep(): STEP {
+    return this._currentStep
   }
 
   getTarefa(codigo: TAREFAS): Tarefa {
@@ -278,6 +210,14 @@ export class Exame {
 
   getTarefasConcluidas(): Tarefa[] {
     return this.tarefas.filter((tarefa) => tarefa.concluida)
+  }
+
+  getUsuarioAtual(): Usuario {
+    return this._usuarioAtual
+  }
+
+  setUsuarioAtual(usuario: Usuario) {
+    this._usuarioAtual = usuario
   }
 
   setTarefaAtiva(t: TAREFAS) {
@@ -295,10 +235,13 @@ export class Exame {
     tarefa.ativa = true
     tarefa.concluida = true
     tarefa.historico.push({
-      usuarioCodigo: this.authService.getUsuarioAtual().codigo,
-      usuarioNome: this.authService.getUsuarioAtual().nome,
+      usuario: this._usuarioAtual,
       objetoAnterior: JSON.stringify(tarefa),
       data: new Date(),
     })
+  }
+
+  imprimirJson() {
+    console.log(this)
   }
 }

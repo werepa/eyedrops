@@ -3,7 +3,6 @@ import {
   AbstractControl,
   FormArray,
   FormBuilder,
-  FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
@@ -13,13 +12,14 @@ import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
 import { addIcons } from "ionicons"
 import { addOutline, camera, cameraOutline, checkmarkOutline, trash, trashOutline } from "ionicons/icons"
-import { Exame, STEP, TAREFAS } from "../shared/models"
+import { STEP, TAREFAS } from "../models/listas"
 import { AuthService } from "../services/auth.service"
 import { GaleriaFotosComponent } from "../galeria-fotos/galeria-fotos.component"
-
 import { defineCustomElements } from "@ionic/pwa-elements/loader"
 import { environment } from "src/environments/environment"
-// Call the element loader before the bootstrapModule/bootstrapApplication call
+import { TarefaComponent } from "../tarefa/tarefa.component"
+import { Exame, Material, Usuario } from "../models"
+
 defineCustomElements(window)
 if (environment.production) {
   enableProdMode()
@@ -30,23 +30,22 @@ if (environment.production) {
   templateUrl: "./main.page.html",
   styleUrls: ["./main.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, GaleriaFotosComponent, FormsModule],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, GaleriaFotosComponent, FormsModule, TarefaComponent],
 })
 export class MainPage implements OnInit {
   private alertController = inject(AlertController)
+  usuarioAtual: Usuario
   form: FormGroup = new FormGroup([])
   step = STEP
   tarefas = TAREFAS
   currentStep: STEP = STEP.RECEBER_MATERIAL
-  fotosEmbalagem: string[] = []
-  fotosLacre: string[] = []
-  fotosSimCards: string[] = []
-  fotosMemoryCard: string[] = []
   selectedTab = "fluxo"
+  listaExames: Exame[] = []
+  materialAtual = ""
 
-  constructor(private authService: AuthService, public exame: Exame, private fb: FormBuilder) {
+  constructor(private authService: AuthService, private fb: FormBuilder) {
+    this.usuarioAtual = this.authService.getUsuarioAtual()
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline })
-    this.iniciarFluxoMaterial()
   }
 
   ngOnInit() {
@@ -54,6 +53,11 @@ export class MainPage implements OnInit {
       nrMateriais: this.fb.array([], nrMaterialValidator),
     })
     this.addNrMaterial()
+  }
+
+  onChangeMaterialAtual(nrMaterial: string) {
+    this.materialAtual = nrMaterial
+    this.getExameAtual().setUsuarioAtual(this.usuarioAtual)
   }
 
   get nrMateriais() {
@@ -65,25 +69,53 @@ export class MainPage implements OnInit {
     nrMateriais.push(this.fb.control(""))
   }
 
+  getExame(nrMaterial: string): Exame {
+    let exame = this.listaExames.find((exame) => exame.material.numero === nrMaterial)
+    if (!exame) {
+      exame = new Exame(new Material(nrMaterial), this.usuarioAtual)
+      this.listaExames.push(exame)
+      this.onChangeMaterialAtual(nrMaterial)
+    }
+    return exame
+  }
+
+  getExameAtual(): Exame {
+    const exame = this.getExame(this.materialAtual)
+    exame.setUsuarioAtual(this.usuarioAtual)
+    return exame
+  }
+
   async onFotosEmbalagem(fotos: string[]) {
-    this.fotosEmbalagem = fotos
+    this.getExameAtual().material.fotos.embalagem = fotos
   }
 
   async onFotosLacre(fotos: string[]) {
-    this.fotosLacre = fotos
+    this.getExameAtual().material.fotos.lacre = fotos
+  }
+
+  async onFotosMaterial(fotos: string[]) {
+    this.getExameAtual().material.fotos.detalhes = fotos
   }
 
   async onFotosSimCards(fotos: string[]) {
-    this.fotosSimCards = fotos
+    this.getExameAtual().material.fotos.simCards = fotos
   }
 
   async onFotosMemoryCard(fotos: string[]) {
-    this.fotosMemoryCard = fotos
+    this.getExameAtual().material.fotos.memoryCard = fotos
+  }
+
+  getNrMateriaisControls(): AbstractControl[] {
+    const nrMateriais = this.form.get("nrMateriais") as FormArray
+    return nrMateriais.controls
   }
 
   iniciarFluxoMaterial() {
-    this.exame.reset()
-    this.exame.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+    this.getNrMateriaisControls().forEach((nrMaterial) => {
+      const exame = this.getExame(nrMaterial.value)
+      exame.reset()
+      exame.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+    })
     this.currentStep = this.step.RECEBER_MATERIAL
   }
 
@@ -113,8 +145,10 @@ export class MainPage implements OnInit {
   }
 
   receberMaterial() {
-    this.exame.setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
-    this.exame.setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
+    console.log("form", this.form)
+    this.iniciarFluxoMaterial()
+    this.getExameAtual().setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
     this.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
   }
 
@@ -128,7 +162,7 @@ export class MainPage implements OnInit {
 
   registrarLacreConfere(value: boolean) {
     if (value) {
-      this.exame.setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
+      this.getExameAtual().setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
       this.currentStep = this.step.VERIFICAR_POSSUI_SIM_CARD
     } else {
       this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
@@ -165,7 +199,7 @@ export class MainPage implements OnInit {
   }
 
   printExame() {
-    console.log("Exame", this.exame)
+    console.log("Exame", this.getExameAtual().imprimirJson())
   }
 }
 

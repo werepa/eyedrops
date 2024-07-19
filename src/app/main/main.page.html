@@ -19,23 +19,11 @@
 
   <ion-grid>
     <ion-row *ngIf="selectedTab==='fluxo'">
-      <ion-col size="12" size-sm="6" class="lista-fluxo">
-        <ion-item
-          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.RECEBER_MATERIAL).ativa,
-        'concluida': exame.getTarefa(tarefas.RECEBER_MATERIAL).concluida
-       }"
-        >
-          <ion-label>
-            <ion-icon
-              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.RECEBER_MATERIAL).concluida }"
-              name="checkmark-outline"
-              slot="icon-only"
-            ></ion-icon>
-            {{ exame.getTarefa(tarefas.RECEBER_MATERIAL).descricao }}
-          </ion-label>
-        </ion-item>
+      <ion-col size="12" size-sm="7" class="lista-fluxo">
+        <app-tarefa [tarefa]="materialAtual && getExameAtual().getTarefa(tarefas.RECEBER_MATERIAL)" />
+        <app-tarefa [tarefa]="materialAtual && getExameAtual().getTarefa(tarefas.CONFERIR_LACRE)" />
       </ion-col>
-      <ion-col size="12" size-sm="6" class="lista-perguntas">
+      <ion-col size="12" size-sm="5" class="lista-perguntas">
         <!-- Receber Material -->
         <div *ngIf="currentStep === step.RECEBER_MATERIAL">
           <ion-card>
@@ -60,21 +48,6 @@
           </ion-card>
         </div>
 
-        <ion-item
-          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
-        'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
-       }"
-        >
-          <ion-label>
-            <ion-icon
-              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
-              name="checkmark-outline"
-              slot="icon-only"
-            ></ion-icon>
-            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
-          </ion-label>
-        </ion-item>
-
         <!-- Receber Material -->
         <div *ngIf="currentStep === step.RECEBER_MATERIAL">
           <ion-card>
@@ -87,21 +60,6 @@
             </ion-card-content>
           </ion-card>
         </div>
-
-        <ion-item
-          [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).ativa,
-        'concluida': exame.getTarefa(tarefas.CONFERIR_LACRE).concluida
-       }"
-        >
-          <ion-label>
-            <ion-icon
-              [ngClass]="{ 'hidden': !exame.getTarefa(tarefas.CONFERIR_LACRE).concluida }"
-              name="checkmark-outline"
-              slot="icon-only"
-            ></ion-icon>
-            {{ exame.getTarefa(tarefas.CONFERIR_LACRE).descricao }}
-          </ion-label>
-        </ion-item>
 
         <!-- Material Lacrado -->
         <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_LACRADO ">
@@ -443,28 +401,35 @@
       <ion-col size="12" size-sm="6" offset-sm="3" class="fotos">
         <app-galeria-fotos
           titulo="Fotos Embalagem"
-          [fotos]="fotosEmbalagem"
+          [fotos]="getExameAtual().material.fotos.embalagem"
           (tirarFoto)="onFotosEmbalagem($event)"
           (excluirFoto)="onFotosEmbalagem($event)"
         />
 
         <app-galeria-fotos
           titulo="Fotos Lacre"
-          [fotos]="fotosLacre"
+          [fotos]="getExameAtual().material.fotos.lacre"
           (tirarFoto)="onFotosLacre($event)"
           (excluirFoto)="onFotosLacre($event)"
         />
 
         <app-galeria-fotos
+          titulo="Fotos Material Etiquetado"
+          [fotos]="getExameAtual().material.fotos.detalhes"
+          (tirarFoto)="onFotosMaterial($event)"
+          (excluirFoto)="onFotosMaterial($event)"
+        />
+
+        <app-galeria-fotos
           titulo="Fotos SIM Cards"
-          [fotos]="fotosSimCards"
+          [fotos]="getExameAtual().material.fotos.simCards"
           (tirarFoto)="onFotosSimCards($event)"
           (excluirFoto)="onFotosSimCards($event)"
         />
 
         <app-galeria-fotos
           titulo="Fotos Memory Card"
-          [fotos]="fotosMemoryCard"
+          [fotos]="getExameAtual().material.fotos.memoryCard"
           (tirarFoto)="onFotosMemoryCard($event)"
           (excluirFoto)="onFotosMemoryCard($event)"
         />

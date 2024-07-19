@@ -1,0 +1,11 @@
+<ion-item
+  [ngClass]="{
+    hidden: !tarefa.ativa,
+    concluida: tarefa.concluida
+  }"
+>
+  <ion-label>
+    <ion-icon [ngClass]="{ transparente: !tarefa.concluida }" name="checkmark-outline" slot="icon-only"></ion-icon>
+    {{ tarefa.descricao }}
+  </ion-label>
+</ion-item>
