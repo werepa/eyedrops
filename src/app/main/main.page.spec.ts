@@ -171,8 +171,73 @@ describe("MainPage", () => {
     component.listaExames.forEach((exame) => {
       expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
       expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
+      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
+      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
     })
     expect(component.materialAtual).toBe("0123/2024")
+    component.getExameAtual().setTarefaConcluida(TAREFAS.RECEBER_MATERIAL)
+    component.getExameAtual().setTarefaAtiva(TAREFAS.CONFERIR_LACRE)
+    component.getExameAtual().setTarefaConcluida(TAREFAS.CONFERIR_LACRE)
+    expect(component.getExameAtual().getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+    expect(component.getExameAtual().getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
+    component.iniciarFluxoMaterial()
+    component.listaExames.forEach((exame) => {
+      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
+      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
+      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+    })
+  })
+
+  it("should update currentStep after RECEBER_MATERIAL", () => {
+    populateMaterialFields()
+    expect(component.currentStep).toBe(STEP.RECEBER_MATERIAL)
+    component.receberMaterial()
+    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_LACRADO)
+  })
+
+  it("should update currentStep after VERIFICAR_MATERIAL_LACRADO", () => {
+    populateMaterialFields()
+    component.receberMaterial()
+    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_LACRADO)
+    component.materialRecebidoLacrado(true)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_LACRE_CONFERE)
+    component.materialRecebidoLacrado(false)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO)
+  })
+
+  it("should update currentStep after VERIFICAR_MATERIAL_DEVE_SER_LACRADO", () => {
+    populateMaterialFields()
+    component.materialRecebidoLacrado(false)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO)
+    component.registrarExcecaoLacre()
+    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
+  })
+
+  it("should update currentStep after VERIFICAR_LACRE_CONFERE", () => {
+    populateMaterialFields()
+    component.materialRecebidoLacrado(true)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_LACRE_CONFERE)
+    component.registrarLacreConfere(true)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
+    component.registrarLacreConfere(false)
+    expect(component.currentStep).toBe(STEP.RECEBER_MATERIAL)
+  })
+
+  it("should update currentStep after VERIFICAR_QTDE_SIM_CARDS", () => {
+    populateMaterialFields()
+    component.registrarLacreConfere(true)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
+    component.registrarQtdeSimCards(1)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_MEMORY_CARDS)
+  })
+
+  it("should update currentStep after VERIFICAR_QTDE_MEMORY_CARDS", () => {
+    populateMaterialFields()
+    component.registrarQtdeSimCards(1)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_MEMORY_CARDS)
+    component.registrarQtdeMemoryCards(0)
+    expect(component.currentStep).toBe(STEP.VERIFICAR_FUNCIONAMENTO_TELA)
   })
 
   // CONFERIR_LACRE = 1
@@ -193,7 +258,8 @@ describe("MainPage", () => {
   // DESLACRAR_MATERIAL = 6,
   // ETIQUETAR_MATERIAL = 7,
   // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
-  it("should update tarefas after RECEBER_MATERIAL", () => {
+  // REGISTRAR_QTDE_SIM_CARDS = 9,
+  it("should update tarefas after VERIFICAR_LACRE_CONFERE", () => {
     populateMaterialFields()
     component.receberMaterial()
     component.registrarLacreConfere(true)
@@ -216,6 +282,99 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).concluida).toBe(false)
+  })
+
+  // REGISTRAR_OPERADORA_SIM_CARD = 10,
+  // FOTOGRAFAR_SIM_CARD = 11,
+  // EXTRACAO_SIM_CARD = 12,
+  // REGISTRAR_QTDE_MEMORY_CARDS = 13,
+  it("should update tarefas after REGISTRAR_QTDE_SIM_CARDS", () => {
+    populateMaterialFields()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(0)
+    const exameAtual = component.getExameAtual()
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).ativa).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_SIM_CARD).ativa).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_SIM_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).ativa).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_MEMORY_CARDS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_MEMORY_CARDS).concluida).toBe(false)
+    component.registrarQtdeSimCards(2)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_SIM_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).concluida).toBe(false)
+  })
+
+  // FOTOGRAFAR_MEMORY_CARD = 14,
+  // EXTRACAO_MEMORY_CARD = 15,
+  // REGISTRAR_ESTADO_CONSERVACAO = 16,
+  // REGISTRAR_DEFEITOS_OBSERVADOS = 17,
+  // REGISTRAR_APARELHO_RECEBIDO_LIGADO = 18,
+  // CARREGAR_BATERIA = 19,
+  it("should update tarefas after REGISTRAR_QTDE_MEMORY_CARDS", () => {
+    populateMaterialFields()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    component.registrarQtdeMemoryCards(0)
+    const exameAtual = component.getExameAtual()
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_MEMORY_CARDS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_MEMORY_CARDS).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MEMORY_CARD).ativa).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MEMORY_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).ativa).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ESTADO_CONSERVACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ESTADO_CONSERVACAO).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_LIGADO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_LIGADO).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.CARREGAR_BATERIA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.CARREGAR_BATERIA).concluida).toBe(false)
+    component.registrarQtdeMemoryCards(1)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MEMORY_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MEMORY_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).concluida).toBe(false)
   })
 
   //   it("should update exame registrarLacreConfere when calling registrarLacreConfere", () => {

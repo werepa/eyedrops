@@ -58,6 +58,8 @@ export class MainPage implements OnInit {
     })
     this.form = this.fb.group({
       materiais: this.fb.array([], [Validators.minLength(1)]),
+      qtdeSimCards: [0, Validators.min(0)],
+      qtdeMemoryCards: [0, Validators.min(0)],
     })
     this.addMaterialControl()
   }
@@ -148,9 +150,9 @@ export class MainPage implements OnInit {
       const materialNumero = material.get("numero")?.value
       const materialUf = material.get("uf")?.value
       const exame = this.getExame(materialNumero, materialUf)
-      exame.reset()
-      exame.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
       this.onChangeMaterialAtual(exame.material.numero, exame.material.uf)
+      this.getExameAtual().reset()
+      this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
     })
     this.currentStep = this.step.RECEBER_MATERIAL
   }
@@ -202,6 +204,7 @@ export class MainPage implements OnInit {
   // DESLACRAR_MATERIAL = 6,
   // ETIQUETAR_MATERIAL = 7,
   // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
+  // REGISTRAR_QTDE_SIM_CARDS = 9,
   registrarLacreConfere(value: boolean) {
     if (value) {
       this.getExameAtual().setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
@@ -212,14 +215,52 @@ export class MainPage implements OnInit {
       this.getExameAtual().setTarefaAtiva(this.tarefas.DESLACRAR_MATERIAL)
       this.getExameAtual().setTarefaAtiva(this.tarefas.ETIQUETAR_MATERIAL)
       this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
-      this.currentStep = this.step.VERIFICAR_POSSUI_SIM_CARD
+      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
+      this.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
     } else {
-      this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+      this.getExameAtual().reset()
+      this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+      this.iniciarFluxoMaterial()
     }
   }
 
   registrarExcecaoLacre() {
-    this.currentStep = this.step.VERIFICAR_POSSUI_SIM_CARD
+    this.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
+  }
+
+  // REGISTRAR_OPERADORA_SIM_CARD = 10,
+  // FOTOGRAFAR_SIM_CARD = 11,
+  // EXTRACAO_SIM_CARD = 12,
+  // REGISTRAR_QTDE_MEMORY_CARDS = 13,
+  registrarQtdeSimCards(value: number) {
+    if (value > 0) {
+      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_OPERADORA_SIM_CARD)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_SIM_CARD)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.EXTRACAO_SIM_CARD)
+    }
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
+    this.getExameAtual().setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
+    this.currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
+  }
+
+  // FOTOGRAFAR_MEMORY_CARD = 14,
+  // EXTRACAO_MEMORY_CARD = 15,
+  // REGISTRAR_ESTADO_CONSERVACAO = 16,
+  // REGISTRAR_DEFEITOS_OBSERVADOS = 17,
+  // REGISTRAR_APARELHO_RECEBIDO_LIGADO = 18,
+  // CARREGAR_BATERIA = 19,
+  registrarQtdeMemoryCards(value: number) {
+    if (value > 0) {
+      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MEMORY_CARD)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.EXTRACAO_MEMORY_CARD)
+    }
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_ESTADO_CONSERVACAO)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.CARREGAR_BATERIA)
+    this.currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
   }
 
   registrarModoAviao(value: boolean) {
@@ -228,18 +269,6 @@ export class MainPage implements OnInit {
 
   telaFuncionando(value: boolean) {
     this.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
-  }
-
-  tirarFotoSimCard() {
-    console.log("Foto do Sim Card")
-  }
-
-  tirarFotoMemoryCard() {
-    console.log("Foto do Memory Card")
-  }
-
-  tirarFotoMaterial() {
-    console.log("Foto do Material")
   }
 
   finalizar() {

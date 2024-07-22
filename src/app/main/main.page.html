@@ -113,113 +113,68 @@
         </div>
 
         <!-- Verificar Deve Ser Lacrado -->
-        <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO ">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Lacre </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Deve ser Lacrado?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="iniciarFluxoMaterial()">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="registrarExcecaoLacre()">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
+        <ion-card *ngIf="currentStep === step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO ">
+          <ion-card-content>
+            <ion-card-subtitle> Lacre </ion-card-subtitle>
+            <ion-item>
+              <ion-label>Deve ser Lacrado?</ion-label>
+            </ion-item>
+            <ion-button expand="full" color="success" (click)="iniciarFluxoMaterial()">Sim</ion-button>
+            <ion-button expand="full" color="danger" (click)="registrarExcecaoLacre()">Não</ion-button>
+          </ion-card-content>
+        </ion-card>
 
         <!-- Verificar Lacre Confere -->
-        <div *ngIf="currentStep === step.VERIFICAR_LACRE_CONFERE">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Lacre </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Lacre Confere com Siscrim?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="registrarLacreConfere(true)">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="registrarLacreConfere(false)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
+        <ion-card *ngIf="currentStep === step.VERIFICAR_LACRE_CONFERE">
+          <ion-card-content>
+            <ion-card-subtitle> Lacre </ion-card-subtitle>
+            <ion-item>
+              <ion-label>Lacre Confere com Siscrim?</ion-label>
+            </ion-item>
+            <ion-button expand="full" color="success" (click)="registrarLacreConfere(true)">Sim</ion-button>
+            <ion-button expand="full" color="danger" (click)="registrarLacreConfere(false)">Não</ion-button>
+          </ion-card-content>
+        </ion-card>
 
-        <!-- <ion-item
-        [ngClass]="{'visible': tarefa.ativa, 'hidden': !tarefa.ativa, 'lista-tarefas':true }"
-        *ngFor="let tarefa of exame.getTarefasAtivas()"
-      >
-        <ion-label>
-          <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
-          {{ tarefa.descricao }}
-        </ion-label>
-      </ion-item> -->
+        <!-- Verificar SIM Card -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_QTDE_SIM_CARDS">
+          <ion-card-content>
+            <ion-card-subtitle> SIM Cards </ion-card-subtitle>
+            <form [formGroup]="form">
+              <ion-item>
+                <ion-input class="cinza" label="Qtde SIM Cards" type="number" formControlName="qtdeSimCards" />
+              </ion-item>
+              <ion-button expand="full" color="primary" (click)="registrarQtdeSimCards(this.form.get('qtdeSimCards')?.value)"
+                >Continuar</ion-button
+              >
+            </form>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Verificar Memory Card -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_QTDE_MEMORY_CARDS">
+          <ion-card-content>
+            <ion-card-subtitle> Memory Cards </ion-card-subtitle>
+            <form [formGroup]="form">
+              <ion-item>
+                <ion-input class="cinza" label="Qtde Memory Cards" type="number" formControlName="qtdeMemoryCards" />
+              </ion-item>
+              <ion-button
+                expand="full"
+                color="primary"
+                (click)="registrarQtdeMemoryCards(this.form.get('qtdeMemoryCards')?.value)"
+                >Continuar</ion-button
+              >
+            </form>
+          </ion-card-content>
+        </ion-card>
+
         <br />
         <ion-button (click)="printExame()">Imprimir exame</ion-button>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='dados'">
       <ion-col size="12" size-sm="6" offset-sm="3" class="dados">
-        <ion-card>
-          <ion-card-content>
-            <ion-card-subtitle> Dados do Material </ion-card-subtitle>
-            <ion-item>
-              <ion-label>Atualizar Cadastro Material</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Registrar Código EPOL</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Deslacrar Material</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Etiquetar Material</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-button expand="full" (click)="tirarFotoMaterial()">
-                <ion-icon slot="start" name="camera"></ion-icon>
-                Fotos Material com Etiqueta QRCODE EPOL
-              </ion-button>
-            </ion-item>
-            <ion-item>
-              <ion-label>Registrar Qtde SIM Cards e Memory Cards</ion-label>
-              <ion-input type="number"></ion-input>
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Memory Card -->
-        <ion-card>
-          <ion-card-content>
-            <ion-card-subtitle> MEMORY CARD </ion-card-subtitle>
-            <ion-item>
-              <ion-button expand="full" (click)="tirarFotoMemoryCard()">
-                <ion-icon slot="start" name="camera"></ion-icon>
-                Foto SIM CARD
-              </ion-button>
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- SIM Card -->
-        <ion-card>
-          <ion-card-content>
-            <ion-card-subtitle> SIM CARD </ion-card-subtitle>
-            <ion-item>
-              <ion-button expand="full" (click)="tirarFotoSimCard()">
-                <ion-icon slot="start" name="camera"></ion-icon>
-                Foto SIM CARD
-              </ion-button>
-            </ion-item>
-            <ion-item>
-              <ion-label>Operadora</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Realizar Extração UFED</ion-label>
-            </ion-item>
-          </ion-card-content>
-        </ion-card>
-
         <!-- Estado de Conservação -->
         <ion-card>
           <ion-card-content>
