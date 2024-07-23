@@ -14,6 +14,7 @@ import { checkmarkOutline } from "ionicons/icons"
 export class TarefaComponent {
   @Input() tarefa: any = {}
   @Input() isSmallScreen: boolean = false
+  @Input() mostrarTarefasConcluidas: boolean = true
 
   constructor() {
     addIcons({ checkmarkOutline })

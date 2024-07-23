@@ -1,6 +1,6 @@
 <ion-item
   [ngClass]="{
-    hidden: !tarefa.ativa,
+    hidden: !tarefa.ativa || (tarefa.concluida && !mostrarTarefasConcluidas),
     concluida: tarefa.concluida,
     'small-screen': isSmallScreen
   }"

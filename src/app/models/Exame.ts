@@ -104,10 +104,6 @@ export class Exame {
         descricao: "Registrar fabricante e modelo",
       },
       {
-        codigo: TAREFAS.REGISTRAR_PERCENTUAL_BATERIA,
-        descricao: "Registrar percentual de bateria",
-      },
-      {
         codigo: TAREFAS.REGISTRAR_APARELHO_BLOQUEADO,
         descricao: "Registrar se o aparelho está bloqueado",
       },
@@ -243,6 +239,6 @@ export class Exame {
   }
 
   imprimirJson() {
-    console.log(this)
+    console.log(`Material ${this.material.numero}:`, this)
   }
 }

@@ -1,7 +1,15 @@
+import { TELA_STATUS } from "./listas"
+
 export class Material {
   private _numero: string = ""
   private _uf: string = ""
-  private _lacre?: string = ""
+  private _lacre: string = ""
+  private _recebidoLigado: boolean = false
+  private _telaFuncionando: TELA_STATUS = TELA_STATUS.NAO_VERIFICADA
+  private _modoAviao: boolean = false
+  private _bloqueado: boolean = false
+  private _senhaFornecida: boolean = false
+  private _senha: string = ""
   private _fotos: {
     embalagem: string[]
     lacre: string[]
@@ -24,20 +32,72 @@ export class Material {
     this._uf = uf.toUpperCase()
   }
 
-  get numero() {
+  get numero(): string {
     return this._numero
   }
 
-  get uf() {
+  get uf(): string {
     return this._uf
   }
 
-  get lacre() {
+  get lacre(): string {
     return this._lacre
+  }
+
+  set lacre(lacre: string) {
+    this._lacre = lacre
   }
 
   get fotos() {
     return this._fotos
+  }
+
+  get recebidoLigado(): boolean {
+    return this._recebidoLigado
+  }
+
+  set recebidoLigado(ligado: boolean) {
+    this._recebidoLigado = ligado
+  }
+
+  get telaFuncionando(): TELA_STATUS {
+    return this._telaFuncionando
+  }
+
+  set telaFuncionando(status: TELA_STATUS) {
+    this._telaFuncionando = status
+  }
+
+  get modoAviao(): boolean {
+    return this._modoAviao
+  }
+
+  set modoAviao(modo: boolean) {
+    this._modoAviao = modo
+  }
+
+  get bloqueado(): boolean {
+    return this._bloqueado
+  }
+
+  set bloqueado(bloqueado: boolean) {
+    this._bloqueado = bloqueado
+  }
+
+  get senhaFornecida(): boolean {
+    return this._senhaFornecida
+  }
+
+  set senhaFornecida(fornecida: boolean) {
+    this._senhaFornecida = fornecida
+  }
+
+  get senha(): string {
+    return this._senha
+  }
+
+  set senha(senha: string) {
+    this._senha = senha
   }
 
   // verifica se o número do material possui ano, caso contrário adiciona o ano atual

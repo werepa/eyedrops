@@ -1,6 +1,11 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Fluxo de Material</ion-title>
+    <ion-buttons slot="end" *ngIf="materialAtual">
+      <ion-button (click)="printExame()">
+        <ion-icon slot="icon-only" name="print-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -11,13 +16,13 @@
 }"
 >
   <ion-segment [(ngModel)]="selectedTab">
-    <ion-segment-button value="fluxo">
+    <ion-segment-button value="fluxo" (click)="alternarVisualizacaoFluxo()">
       <ion-label>Tarefas</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="dados" *ngIf="materialAtual">
+    <ion-segment-button value="dados" *ngIf="materialAtual" (click)="onChangeTab()">
       <ion-label>Dados</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="fotos" *ngIf="materialAtual">
+    <ion-segment-button value="fotos" *ngIf="materialAtual" (click)="onChangeTab()">
       <ion-label>Fotos</ion-label>
     </ion-segment-button>
   </ion-segment>
@@ -32,7 +37,12 @@
           </ion-label>
         </ion-item>
         <section *ngIf="materialAtual">
-          <app-tarefa [isSmallScreen]="isSmallScreen" [tarefa]="getExameAtual().getTarefa(t)" *ngFor="let t of getRange()" />
+          <app-tarefa
+            [isSmallScreen]="isSmallScreen"
+            [tarefa]="getExameAtual().getTarefa(t)"
+            [mostrarTarefasConcluidas]="mostrarTarefasConcluidas"
+            *ngFor="let t of getRange()"
+          />
         </section>
       </ion-col>
       <ion-col size="12" size-sm="5" class="lista-perguntas">
@@ -54,7 +64,12 @@
                       <ion-row>
                         <ion-col size="8">
                           <ion-label class="cinza" position="stacked">Número Material</ion-label>
-                          <ion-input type="text" formControlName="numero"></ion-input>
+                          <ion-input
+                            autofocus
+                            type="text"
+                            formControlName="numero"
+                            (keyup.enter)="receberMaterial()"
+                          ></ion-input>
                         </ion-col>
                         <ion-col size="4">
                           <ion-label class="cinza" position="stacked">UF</ion-label>
@@ -142,7 +157,14 @@
             <ion-card-subtitle> SIM Cards </ion-card-subtitle>
             <form [formGroup]="form">
               <ion-item>
-                <ion-input class="cinza" label="Qtde SIM Cards" type="number" formControlName="qtdeSimCards" />
+                <ion-input
+                  autofocus
+                  class="cinza"
+                  label="Qtde SIM Cards"
+                  type="number"
+                  formControlName="qtdeSimCards"
+                  (keyup.enter)="registrarQtdeSimCards(this.form.get('qtdeSimCards')?.value)"
+                />
               </ion-item>
               <ion-button expand="full" color="primary" (click)="registrarQtdeSimCards(this.form.get('qtdeSimCards')?.value)"
                 >Continuar</ion-button
@@ -157,7 +179,14 @@
             <ion-card-subtitle> Memory Cards </ion-card-subtitle>
             <form [formGroup]="form">
               <ion-item>
-                <ion-input class="cinza" label="Qtde Memory Cards" type="number" formControlName="qtdeMemoryCards" />
+                <ion-input
+                  autofocus
+                  class="cinza"
+                  label="Qtde Memory Cards"
+                  type="number"
+                  formControlName="qtdeMemoryCards"
+                  (keyup.enter)="registrarQtdeMemoryCards(this.form.get('qtdeMemoryCards')?.value)"
+                />
               </ion-item>
               <ion-button
                 expand="full"
@@ -169,8 +198,79 @@
           </ion-card-content>
         </ion-card>
 
-        <br />
-        <ion-button (click)="printExame()">Imprimir exame</ion-button>
+        <!-- Verificar Aparelho Recebido Ligado -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_APARELHO_RECEBIDO_LIGADO">
+          <ion-card-content>
+            <ion-card-subtitle> AFU / BFU </ion-card-subtitle>
+            <ion-item>
+              <ion-label> Aparelho foi recebido ligado? </ion-label>
+            </ion-item>
+            <ion-button expand="full" color="success" (click)="registrarAparelhoRecebidoLigado(true)">Sim</ion-button>
+            <ion-button expand="full" color="danger" (click)="registrarAparelhoRecebidoLigado(false)">Não</ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Verificar Funcionamento da Tela -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_FUNCIONAMENTO_TELA">
+          <ion-card-content>
+            <ion-card-subtitle> Tela </ion-card-subtitle>
+            <ion-item>
+              <ion-label> Tela Funciona? </ion-label>
+            </ion-item>
+            <ion-button expand="full" color="success" (click)="registrarFuncionamentoTela(true)">Sim</ion-button>
+            <ion-button expand="full" color="danger" (click)="registrarFuncionamentoTela(false)">Não</ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Verificar Aparelho Bloqueado -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_TELEFONE_BLOQUEADO">
+          <ion-card-content>
+            <ion-card-subtitle> Bloqueado </ion-card-subtitle>
+            <ion-item>
+              <ion-label>Celular foi recebido bloqueado?</ion-label>
+            </ion-item>
+            <ion-button expand="full" color="success" (click)="registrarTelefoneBloqueado(true)">Sim</ion-button>
+            <ion-button expand="full" color="danger" (click)="registrarTelefoneBloqueado(false)">Não</ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Verificar Senha Fornecida -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_FORNECIMENTO_SENHA">
+          <ion-card-content>
+            <ion-card-subtitle> Detalhamento da Senha </ion-card-subtitle>
+            <form [formGroup]="formSenha">
+              <ion-item>
+                <ion-select formControlName="senhaFornecidaUsuario" label="Senha fornecida?" interface="popover">
+                  <ion-select-option value="1">Sim</ion-select-option>
+                  <ion-select-option value="0">Não</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item *ngIf="formSenha.get('senhaFornecidaUsuario')?.value === '1'">
+                <ion-input label="Senha" type="text" formControlName="senha"></ion-input>
+              </ion-item>
+              <ion-button
+                expand="full"
+                color="primary"
+                (click)="registrarSenhaFornecida(formSenha.get('senhaFornecidaUsuario')?.value === '1', form.get('senha')?.value)"
+                [disabled]="!formSenha.valid"
+              >
+                Continuar
+              </ion-button>
+            </form>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Verificar Modo Avião -->
+        <ion-card *ngIf="currentStep === step.VERIFICAR_MODO_AVIAO">
+          <ion-card-content>
+            <ion-card-subtitle> Modo Avião </ion-card-subtitle>
+            <ion-item>
+              <ion-label>Aparelho recebido em modo avião?</ion-label>
+            </ion-item>
+            <ion-button expand="full" color="success" (click)="registrarModoAviao(true)">Sim</ion-button>
+            <ion-button expand="full" color="danger" (click)="registrarModoAviao(false)">Não</ion-button>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='dados'">
@@ -194,199 +294,32 @@
             <ion-item>
               <ion-label>Ligar Celular</ion-label>
             </ion-item>
+            <ion-item>
+              <ion-label>Abrir Extrações no Physical Analyzer</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Verificar Chats</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Verificar NR Assinante Operadora</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Verificar Dados Usuário</ion-label>
+            </ion-item>
+            <ion-button expand="full" (click)="finalizar()">Finalizar</ion-button>
           </ion-card-content>
         </ion-card>
 
-        <!-- Verificar Tela Funciona -->
-        <div *ngIf="currentStep === step.VERIFICAR_FUNCIONAMENTO_TELA">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Tela </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Tela Funciona?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="telaFuncionando(true)">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="telaFuncionando(false)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Tela Não Funciona -->
-        <div>
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Fabricante e Modelo </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Carregar Bateria</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Defeitos Observados</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Fabricante</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Modelo</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Tela Funciona -->
-        <div>
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Fabricante e Modelo </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Registrar Percentual Bateria</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Carregar Bateria</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Fabricante</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Modelo</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Verificar Bloqueado -->
-        <div *ngIf="currentStep === step.VERIFICAR_TELEFONE_BLOQUEADO">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Bloqueado </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Celular foi recebido bloqueado?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="nextStep(step.VERIFICAR_FORNECIMENTO_SENHA)"
-                >Sim</ion-button
-              >
-              <ion-button expand="full" color="danger" (click)="nextStep(step.VERIFICAR_MODO_AVIAO)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- VerificarSenhaFornecida -->
-        <div *ngIf="currentStep === step.VERIFICAR_FORNECIMENTO_SENHA">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Detalhamento da Senha </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Senha fornecida?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="nextStep(step.VERIFICAR_MODO_AVIAO)">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="nextStep(step.VERIFICAR_EXTRACAO_OK)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Verificar Modo Avião -->
-        <div *ngIf="currentStep === step.VERIFICAR_MODO_AVIAO">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Modo Avião </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Aparelho recebido em modo avião?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="registrarModoAviao(true)">Sim</ion-button>
-              <ion-button expand="full" color="danger" (click)="registrarModoAviao(false)">Não</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Modo Avião -->
-        <div *ngIf="currentStep === step.VERIFICAR_MODO_AVIAO">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Modo Avião </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Registrar Modo Avião</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Colocar em Modo Avião</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Versão S.O.</ion-label>
-              </ion-item>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Registrar Senha Fornecida -->
-        <div>
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Modo Avião </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Registrar Detalhes Senha</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label>Registrar Número Máquina LAPED</ion-label>
-                <ion-input type="text"></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label>Realizar Extração INSEYES</ion-label>
-              </ion-item>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Verificar Extracao OK -->
-        <div *ngIf="currentStep === step.VERIFICAR_EXTRACAO_OK">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Verificar Extração </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Extração OK?</ion-label>
-              </ion-item>
-              <ion-button expand="full" color="success" (click)="nextStep(step.TAREFAS_CONCLUIDAS)">Sim</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Analise Extrações -->
-        <div>
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Verificar Extração </ion-card-subtitle>
-              <ion-item>
-                <ion-label>Abrir Extrações no Physical Analyzer</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Verificar Chats</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Verificar NR Assinante Operadora</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-label>Verificar Dados Usuário</ion-label>
-              </ion-item>
-              <ion-button expand="full" (click)="finalizar()">Finalizar</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
         <!-- Listagem final -->
-        <div *ngIf="currentStep === step.TAREFAS_CONCLUIDAS">
-          <ion-card>
-            <ion-card-content>
-              <ion-card-subtitle> Conclusão </ion-card-subtitle>
-              <ion-item>
-                <ion-label>O exame foi finalizado!</ion-label>
-              </ion-item>
-              <ion-button expand="full" (click)="nextStep(step.RECEBER_MATERIAL)">Iniciar outro exame</ion-button>
-            </ion-card-content>
-          </ion-card>
-        </div>
+        <ion-card *ngIf="currentStep === step.TAREFAS_CONCLUIDAS">
+          <ion-card-content>
+            <ion-card-subtitle> Conclusão </ion-card-subtitle>
+            <ion-item>
+              <ion-label>O exame foi finalizado!</ion-label>
+            </ion-item>
+            <ion-button expand="full" (click)="nextStep(step.RECEBER_MATERIAL)">Iniciar outro exame</ion-button>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='fotos'">

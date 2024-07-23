@@ -1,4 +1,4 @@
-import { Component, enableProdMode, inject, OnInit } from "@angular/core"
+import { AfterViewChecked, Component, enableProdMode, inject, OnInit } from "@angular/core"
 import {
   AbstractControl,
   FormArray,
@@ -13,8 +13,8 @@ import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout"
 import { addIcons } from "ionicons"
-import { addOutline, camera, cameraOutline, checkmarkOutline, trash, trashOutline } from "ionicons/icons"
-import { STEP, TAREFAS } from "../models/listas"
+import { addOutline, camera, cameraOutline, checkmarkOutline, printOutline, trashOutline } from "ionicons/icons"
+import { STEP, TAREFAS, TELA_STATUS } from "../models/listas"
 import { AuthService } from "../services/auth.service"
 import { GaleriaFotosComponent } from "../galeria-fotos/galeria-fotos.component"
 import { defineCustomElements } from "@ionic/pwa-elements/loader"
@@ -39,17 +39,21 @@ export class MainPage implements OnInit {
   isSmallScreen = false
   usuarioAtual: Usuario
   form: FormGroup = new FormGroup([])
+  formSenha: FormGroup = new FormGroup([])
   step = STEP
   tarefas = TAREFAS
+  telaStatus = TELA_STATUS
   currentStep: STEP = STEP.RECEBER_MATERIAL
   selectedTab = "fluxo"
   listaExames: Exame[] = []
   materialAtual = ""
   materialAtualUF = ""
+  mostrarTarefasConcluidas = false
+  tabAtual = "fluxo"
 
   constructor(private authService: AuthService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
     this.usuarioAtual = this.authService.getUsuarioAtual()
-    addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline })
+    addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline })
   }
 
   ngOnInit() {
@@ -61,7 +65,22 @@ export class MainPage implements OnInit {
       qtdeSimCards: [0, Validators.min(0)],
       qtdeMemoryCards: [0, Validators.min(0)],
     })
+    this.formSenha = this.fb.group({
+      senhaFornecidaUsuario: ["", Validators.required],
+      senha: ["", SenhaValidator],
+    })
     this.addMaterialControl()
+  }
+
+  alternarVisualizacaoFluxo() {
+    if (this.tabAtual === "fluxo") {
+      this.mostrarTarefasConcluidas = !this.mostrarTarefasConcluidas
+    }
+    this.onChangeTab()
+  }
+
+  onChangeTab() {
+    this.tabAtual = this.selectedTab
   }
 
   onChangeMaterialAtual(nrMaterial: string, uf?: string) {
@@ -183,10 +202,12 @@ export class MainPage implements OnInit {
   }
 
   receberMaterial() {
-    this.iniciarFluxoMaterial()
-    this.getExameAtual().setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
-    this.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
+    if (this.form.valid) {
+      this.iniciarFluxoMaterial()
+      this.getExameAtual().setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
+      this.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
+    }
   }
 
   materialRecebidoLacrado(value: boolean) {
@@ -249,7 +270,6 @@ export class MainPage implements OnInit {
   // REGISTRAR_ESTADO_CONSERVACAO = 16,
   // REGISTRAR_DEFEITOS_OBSERVADOS = 17,
   // REGISTRAR_APARELHO_RECEBIDO_LIGADO = 18,
-  // CARREGAR_BATERIA = 19,
   registrarQtdeMemoryCards(value: number) {
     if (value > 0) {
       this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MEMORY_CARD)
@@ -259,16 +279,59 @@ export class MainPage implements OnInit {
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_ESTADO_CONSERVACAO)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
+    this.currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
+  }
+
+  // CARREGAR_BATERIA = 19,
+  // LIGAR_APARELHO = 20,
+  // REGISTRAR_FUNCIONAMENTO_TELA = 21,
+  registrarAparelhoRecebidoLigado(value: boolean) {
+    this.getExameAtual().material.recebidoLigado = value
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
     this.getExameAtual().setTarefaAtiva(this.tarefas.CARREGAR_BATERIA)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.LIGAR_APARELHO)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
     this.currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
+  }
+
+  // REGISTRAR_FABRICANTE_MODELO = 22,
+  // REGISTRAR_APARELHO_BLOQUEADO = 23,
+  registrarFuncionamentoTela(value: boolean) {
+    this.getExameAtual().material.telaFuncionando = TELA_STATUS.FUNCIONANDO
+    if (value) {
+      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
+      this.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
+    } else {
+      this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+    }
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
+  }
+
+  // REGISTRAR_DETALHES_SENHA = 24,
+  // REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO = 25,
+  registrarTelefoneBloqueado(value: boolean) {
+    this.getExameAtual().material.bloqueado = value
+    if (value) {
+      this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA)
+      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DETALHES_SENHA)
+      this.currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
+    } else {
+      this.currentStep = this.step.VERIFICAR_MODO_AVIAO
+    }
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
+    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
+  }
+
+  registrarSenhaFornecida(value: boolean, senha: string) {
+    this.getExameAtual().material.senhaFornecida = value
+    this.getExameAtual().material.senha = senha
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA)
+    this.currentStep = this.step.VERIFICAR_MODO_AVIAO
   }
 
   registrarModoAviao(value: boolean) {
     this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
-  }
-
-  telaFuncionando(value: boolean) {
-    this.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
   }
 
   finalizar() {
@@ -277,7 +340,7 @@ export class MainPage implements OnInit {
   }
 
   printExame() {
-    console.log("Exame", this.getExameAtual().imprimirJson())
+    this.getExameAtual().imprimirJson()
   }
 
   getRange(): number[] {
@@ -313,4 +376,14 @@ function nrMaterialValidator(control: AbstractControl): ValidationErrors | null 
     // Se não corresponder, retorna um objeto de erro
     return { invalidFormat: true }
   }
+}
+
+// Validador personalizado para verificar a senha, se senhaFornecida for "1", a senha deve ser preenchida
+function SenhaValidator(control: AbstractControl): ValidationErrors | null {
+  const senhaFornecida = control.parent?.get("senhaFornecidaUsuario")?.value
+  const senha = control.value
+  if (senhaFornecida === "1" && senha.trim() === "") {
+    return { senhaRequired: true }
+  }
+  return null
 }
