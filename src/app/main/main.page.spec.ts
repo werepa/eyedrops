@@ -49,7 +49,7 @@ describe("MainPage", () => {
   it("should initialize with correct values", () => {
     expect(component.materialAtual).toBe("")
     expect(component.listaExames).toEqual([])
-    expect(component.currentStep).toEqual(STEP.RECEBER_MATERIAL)
+    expect(component.currentStep()).toEqual(STEP.RECEBER_MATERIAL)
     expect(component.usuarioAtual).toBeDefined()
   })
 
@@ -158,15 +158,9 @@ describe("MainPage", () => {
     expect(nrMateriaisControls.length).toBe(1)
   })
 
-  it("should update currentStep when calling nextStep", () => {
-    const nextStep = STEP.VERIFICAR_EXTRACAO_OK
-    component.nextStep(nextStep)
-    expect(component.currentStep).toBe(nextStep)
-  })
-
   it("should initialize the material flow", () => {
     populateMaterialFields()
-    expect(component.currentStep).toBe(STEP.RECEBER_MATERIAL)
+    expect(component.currentStep()).toBe(STEP.RECEBER_MATERIAL)
     expect(component.listaExames.length).toBe(1)
     component.listaExames.forEach((exame) => {
       expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
@@ -191,81 +185,81 @@ describe("MainPage", () => {
 
   it("should update currentStep after RECEBER_MATERIAL", () => {
     populateMaterialFields()
-    expect(component.currentStep).toBe(STEP.RECEBER_MATERIAL)
+    expect(component.currentStep()).toBe(STEP.RECEBER_MATERIAL)
     component.receberMaterial()
-    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_LACRADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_MATERIAL_LACRADO)
   })
 
   it("should update currentStep after VERIFICAR_MATERIAL_LACRADO", () => {
     populateMaterialFields()
     component.receberMaterial()
-    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_LACRADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_MATERIAL_LACRADO)
     component.materialRecebidoLacrado(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_LACRE_CONFERE)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_LACRE_CONFERE)
     component.materialRecebidoLacrado(false)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO)
   })
 
   it("should update currentStep after VERIFICAR_MATERIAL_DEVE_SER_LACRADO", () => {
     populateMaterialFields()
     component.materialRecebidoLacrado(false)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO)
     component.registrarExcecaoLacre()
-    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
   })
 
   it("should update currentStep after VERIFICAR_LACRE_CONFERE", () => {
     populateMaterialFields()
     component.materialRecebidoLacrado(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_LACRE_CONFERE)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_LACRE_CONFERE)
     component.registrarLacreConfere(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
     component.registrarLacreConfere(false)
-    expect(component.currentStep).toBe(STEP.RECEBER_MATERIAL)
+    expect(component.currentStep()).toBe(STEP.RECEBER_MATERIAL)
   })
 
   it("should update currentStep after VERIFICAR_QTDE_SIM_CARDS", () => {
     populateMaterialFields()
     component.registrarLacreConfere(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_QTDE_SIM_CARDS)
     component.registrarQtdeSimCards(1)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_MEMORY_CARDS)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_QTDE_MEMORY_CARDS)
   })
 
   it("should update currentStep after VERIFICAR_QTDE_MEMORY_CARDS", () => {
     populateMaterialFields()
     component.registrarQtdeSimCards(1)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_QTDE_MEMORY_CARDS)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_QTDE_MEMORY_CARDS)
     component.registrarQtdeMemoryCards(0)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_APARELHO_RECEBIDO_LIGADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_APARELHO_RECEBIDO_LIGADO)
   })
 
   it("should update currentStep after VERIFICAR_APARELHO_RECEBIDO_LIGADO", () => {
     populateMaterialFields()
     component.registrarQtdeMemoryCards(0)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_APARELHO_RECEBIDO_LIGADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_APARELHO_RECEBIDO_LIGADO)
     component.registrarAparelhoRecebidoLigado(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_FUNCIONAMENTO_TELA)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_FUNCIONAMENTO_TELA)
   })
 
   it("should update currentStep after VERIFICAR_FUNCIONAMENTO_TELA", () => {
     populateMaterialFields()
     component.registrarAparelhoRecebidoLigado(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_FUNCIONAMENTO_TELA)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_FUNCIONAMENTO_TELA)
     component.registrarFuncionamentoTela(false)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_EXTRACAO_OK)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_EXTRACAO_OK)
     component.registrarFuncionamentoTela(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_TELEFONE_BLOQUEADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_TELEFONE_BLOQUEADO)
   })
 
   it("should update currentStep after VERIFICAR_TELEFONE_BLOQUEADO", () => {
     populateMaterialFields()
     component.registrarFuncionamentoTela(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_TELEFONE_BLOQUEADO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_TELEFONE_BLOQUEADO)
     component.registrarTelefoneBloqueado(true)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_FORNECIMENTO_SENHA)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_FORNECIMENTO_SENHA)
     component.registrarTelefoneBloqueado(false)
-    expect(component.currentStep).toBe(STEP.VERIFICAR_MODO_AVIAO)
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
   })
 
   // CONFERIR_LACRE = 1

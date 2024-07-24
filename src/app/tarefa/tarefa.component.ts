@@ -15,8 +15,14 @@ export class TarefaComponent {
   @Input() tarefa: any = {}
   @Input() isSmallScreen: boolean = false
   @Input() mostrarTarefasConcluidas: boolean = true
+  mostrarHistorico: boolean = false
 
   constructor() {
     addIcons({ checkmarkOutline })
+  }
+
+  toggleHistorico() {
+    this.mostrarHistorico = !this.mostrarHistorico
+    console.log(this.mostrarHistorico)
   }
 }

@@ -47,7 +47,7 @@
       </ion-col>
       <ion-col size="12" size-sm="5" class="lista-perguntas">
         <!-- Receber Material -->
-        <div *ngIf="currentStep === step.RECEBER_MATERIAL">
+        <div *ngIf="currentStep() === step.RECEBER_MATERIAL">
           <ion-card>
             <ion-card-content>
               <ion-card-subtitle> Início </ion-card-subtitle>
@@ -114,7 +114,7 @@
         </div>
 
         <!-- Material Lacrado -->
-        <div *ngIf="currentStep === step.VERIFICAR_MATERIAL_LACRADO ">
+        <div *ngIf="currentStep() === step.VERIFICAR_MATERIAL_LACRADO ">
           <ion-card>
             <ion-card-content>
               <ion-card-subtitle> Lacre </ion-card-subtitle>
@@ -128,7 +128,7 @@
         </div>
 
         <!-- Verificar Deve Ser Lacrado -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO ">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO ">
           <ion-card-content>
             <ion-card-subtitle> Lacre </ion-card-subtitle>
             <ion-item>
@@ -140,7 +140,7 @@
         </ion-card>
 
         <!-- Verificar Lacre Confere -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_LACRE_CONFERE">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_LACRE_CONFERE">
           <ion-card-content>
             <ion-card-subtitle> Lacre </ion-card-subtitle>
             <ion-item>
@@ -152,7 +152,7 @@
         </ion-card>
 
         <!-- Verificar SIM Card -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_QTDE_SIM_CARDS">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_QTDE_SIM_CARDS">
           <ion-card-content>
             <ion-card-subtitle> SIM Cards </ion-card-subtitle>
             <form [formGroup]="form">
@@ -174,7 +174,7 @@
         </ion-card>
 
         <!-- Verificar Memory Card -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_QTDE_MEMORY_CARDS">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_QTDE_MEMORY_CARDS">
           <ion-card-content>
             <ion-card-subtitle> Memory Cards </ion-card-subtitle>
             <form [formGroup]="form">
@@ -199,7 +199,7 @@
         </ion-card>
 
         <!-- Verificar Aparelho Recebido Ligado -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_APARELHO_RECEBIDO_LIGADO">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_APARELHO_RECEBIDO_LIGADO">
           <ion-card-content>
             <ion-card-subtitle> AFU / BFU </ion-card-subtitle>
             <ion-item>
@@ -211,7 +211,7 @@
         </ion-card>
 
         <!-- Verificar Funcionamento da Tela -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_FUNCIONAMENTO_TELA">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_FUNCIONAMENTO_TELA">
           <ion-card-content>
             <ion-card-subtitle> Tela </ion-card-subtitle>
             <ion-item>
@@ -223,7 +223,7 @@
         </ion-card>
 
         <!-- Verificar Aparelho Bloqueado -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_TELEFONE_BLOQUEADO">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_TELEFONE_BLOQUEADO">
           <ion-card-content>
             <ion-card-subtitle> Bloqueado </ion-card-subtitle>
             <ion-item>
@@ -235,7 +235,7 @@
         </ion-card>
 
         <!-- Verificar Senha Fornecida -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_FORNECIMENTO_SENHA">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_FORNECIMENTO_SENHA">
           <ion-card-content>
             <ion-card-subtitle> Detalhamento da Senha </ion-card-subtitle>
             <form [formGroup]="formSenha">
@@ -261,7 +261,7 @@
         </ion-card>
 
         <!-- Verificar Modo Avião -->
-        <ion-card *ngIf="currentStep === step.VERIFICAR_MODO_AVIAO">
+        <ion-card *ngIf="currentStep() === step.VERIFICAR_MODO_AVIAO">
           <ion-card-content>
             <ion-card-subtitle> Modo Avião </ion-card-subtitle>
             <ion-item>
@@ -307,17 +307,6 @@
               <ion-label>Verificar Dados Usuário</ion-label>
             </ion-item>
             <ion-button expand="full" (click)="finalizar()">Finalizar</ion-button>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Listagem final -->
-        <ion-card *ngIf="currentStep === step.TAREFAS_CONCLUIDAS">
-          <ion-card-content>
-            <ion-card-subtitle> Conclusão </ion-card-subtitle>
-            <ion-item>
-              <ion-label>O exame foi finalizado!</ion-label>
-            </ion-item>
-            <ion-button expand="full" (click)="nextStep(step.RECEBER_MATERIAL)">Iniciar outro exame</ion-button>
           </ion-card-content>
         </ion-card>
       </ion-col>

@@ -43,7 +43,6 @@ export class MainPage implements OnInit {
   step = STEP
   tarefas = TAREFAS
   telaStatus = TELA_STATUS
-  currentStep: STEP = STEP.RECEBER_MATERIAL
   selectedTab = "fluxo"
   listaExames: Exame[] = []
   materialAtual = ""
@@ -70,6 +69,12 @@ export class MainPage implements OnInit {
       senha: ["", SenhaValidator],
     })
     this.addMaterialControl()
+  }
+
+  currentStep(): STEP {
+    if (!this.materialAtual) return STEP.RECEBER_MATERIAL
+    const exameAtual = this.getExameAtual()
+    return exameAtual ? exameAtual.currentStep : STEP.RECEBER_MATERIAL
   }
 
   alternarVisualizacaoFluxo() {
@@ -173,11 +178,7 @@ export class MainPage implements OnInit {
       this.getExameAtual().reset()
       this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
     })
-    this.currentStep = this.step.RECEBER_MATERIAL
-  }
-
-  nextStep(step: STEP) {
-    this.currentStep = step
+    this.getExameAtual().currentStep = this.step.RECEBER_MATERIAL
   }
 
   confirmaReiniciarProcesso() {
@@ -206,15 +207,15 @@ export class MainPage implements OnInit {
       this.iniciarFluxoMaterial()
       this.getExameAtual().setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
       this.getExameAtual().setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
-      this.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
+      this.getExameAtual().currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
     }
   }
 
   materialRecebidoLacrado(value: boolean) {
     if (value) {
-      this.currentStep = this.step.VERIFICAR_LACRE_CONFERE
+      this.getExameAtual().currentStep = this.step.VERIFICAR_LACRE_CONFERE
     } else {
-      this.currentStep = this.step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO
+      this.getExameAtual().currentStep = this.step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO
     }
   }
 
@@ -237,7 +238,7 @@ export class MainPage implements OnInit {
       this.getExameAtual().setTarefaAtiva(this.tarefas.ETIQUETAR_MATERIAL)
       this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
       this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
-      this.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
+      this.getExameAtual().currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
     } else {
       this.getExameAtual().reset()
       this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
@@ -246,7 +247,7 @@ export class MainPage implements OnInit {
   }
 
   registrarExcecaoLacre() {
-    this.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
+    this.getExameAtual().currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
   }
 
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
@@ -262,7 +263,7 @@ export class MainPage implements OnInit {
     this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
     this.getExameAtual().setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
-    this.currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
+    this.getExameAtual().currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
   }
 
   // FOTOGRAFAR_MEMORY_CARD = 14,
@@ -279,7 +280,7 @@ export class MainPage implements OnInit {
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_ESTADO_CONSERVACAO)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
-    this.currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
+    this.getExameAtual().currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
   }
 
   // CARREGAR_BATERIA = 19,
@@ -291,7 +292,7 @@ export class MainPage implements OnInit {
     this.getExameAtual().setTarefaAtiva(this.tarefas.CARREGAR_BATERIA)
     this.getExameAtual().setTarefaAtiva(this.tarefas.LIGAR_APARELHO)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
-    this.currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
+    this.getExameAtual().currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
   }
 
   // REGISTRAR_FABRICANTE_MODELO = 22,
@@ -300,9 +301,9 @@ export class MainPage implements OnInit {
     this.getExameAtual().material.telaFuncionando = TELA_STATUS.FUNCIONANDO
     if (value) {
       this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
-      this.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
+      this.getExameAtual().currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
     } else {
-      this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+      this.getExameAtual().currentStep = this.step.VERIFICAR_EXTRACAO_OK
     }
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
     this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
@@ -315,9 +316,9 @@ export class MainPage implements OnInit {
     if (value) {
       this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA)
       this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DETALHES_SENHA)
-      this.currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
+      this.getExameAtual().currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
     } else {
-      this.currentStep = this.step.VERIFICAR_MODO_AVIAO
+      this.getExameAtual().currentStep = this.step.VERIFICAR_MODO_AVIAO
     }
     this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
@@ -327,16 +328,16 @@ export class MainPage implements OnInit {
     this.getExameAtual().material.senhaFornecida = value
     this.getExameAtual().material.senha = senha
     this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA)
-    this.currentStep = this.step.VERIFICAR_MODO_AVIAO
+    this.getExameAtual().currentStep = this.step.VERIFICAR_MODO_AVIAO
   }
 
   registrarModoAviao(value: boolean) {
-    this.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+    this.getExameAtual().currentStep = this.step.VERIFICAR_EXTRACAO_OK
   }
 
   finalizar() {
     this.printExame()
-    this.currentStep = this.step.TAREFAS_CONCLUIDAS
+    this.getExameAtual().currentStep = this.step.TAREFAS_CONCLUIDAS
   }
 
   printExame() {

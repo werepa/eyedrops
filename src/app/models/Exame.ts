@@ -197,6 +197,10 @@ export class Exame {
     return this._currentStep
   }
 
+  set currentStep(step: STEP) {
+    this._currentStep = step
+  }
+
   getTarefa(codigo: TAREFAS): Tarefa {
     return this.tarefas.find((t) => t.codigo === codigo) as Tarefa
   }
