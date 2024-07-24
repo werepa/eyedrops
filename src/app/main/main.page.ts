@@ -306,6 +306,7 @@ export class MainPage implements OnInit {
       this.getExameAtual().currentStep = this.step.VERIFICAR_EXTRACAO_OK
     }
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
+    this.getExameAtual().setTarefaConcluida(this.tarefas.LIGAR_APARELHO)
     this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
   }
 
@@ -314,7 +315,6 @@ export class MainPage implements OnInit {
   registrarTelefoneBloqueado(value: boolean) {
     this.getExameAtual().material.bloqueado = value
     if (value) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA)
       this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DETALHES_SENHA)
       this.getExameAtual().currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
     } else {
@@ -332,6 +332,11 @@ export class MainPage implements OnInit {
   }
 
   registrarModoAviao(value: boolean) {
+    this.getExameAtual().material.modoAviao = value
+    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
+    if (!value) {
+      this.getExameAtual().setTarefaAtiva(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO)
+    }
     this.getExameAtual().currentStep = this.step.VERIFICAR_EXTRACAO_OK
   }
 
