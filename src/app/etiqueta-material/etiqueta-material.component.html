@@ -1,0 +1,11 @@
+<ion-label
+  [ngClass]="{
+'cinza':!isMaterialAtual,
+'negrito':isMaterialAtual,
+}"
+  *ngIf="exame"
+>
+  <span class="small-text">Material</span> {{ exame.material.numero
+  }}<span class="small-text"> {{ exame.material.uf }} </span>
+  <ion-badge color="warning">{{ qtdePendencias() }}</ion-badge>
+</ion-label>

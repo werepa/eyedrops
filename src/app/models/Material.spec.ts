@@ -15,6 +15,7 @@ describe("Material", () => {
   it("should accept a valid number greater than 0", () => {
     const material = new Material(`1`)
     expect(material.numero).toBe(`0001/${currentYear}`)
+    expect()
   })
 
   it("should accept a valid number with the current year", () => {

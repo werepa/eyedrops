@@ -27,18 +27,19 @@ describe("MainPage", () => {
     fixture = TestBed.createComponent(MainPage)
     component = fixture.componentInstance
     component.ngOnInit()
-    exame = new Exame(
-      new Material("123/2024"),
-      new Usuario({ codigo: "001", nome: "Usuario 1", uf: "GO", perfil: "Perito" })
-    )
+    exame = new Exame(new Material("1"), new Usuario({ codigo: "001", nome: "Usuario 1", uf: "GO", perfil: "Perito" }))
   })
 
   function populateMaterialFields() {
     component.addMaterialControl()
-    component.getMateriaisControls().forEach((material) => {
-      material.get("numero")?.setValue("0123/2024")
-      material.get("uf")?.setValue("GO")
-    })
+    component.addMaterialControl()
+    const materialControls = component.getMateriaisControls()
+    materialControls[0].get("numero")?.setValue("0123/2024")
+    materialControls[0].get("uf")?.setValue("GO")
+    materialControls[1].get("numero")?.setValue("0124/2024")
+    materialControls[1].get("uf")?.setValue("GO")
+    materialControls[2].get("numero")?.setValue("0125/2024")
+    materialControls[2].get("uf")?.setValue("GO")
     component.iniciarFluxoMaterial()
   }
 
@@ -103,26 +104,54 @@ describe("MainPage", () => {
   })
 
   it("should update exame fotosEmbalagem when calling onFotosEmbalagem", async () => {
+    expect(component.listaExames.length).toBe(0)
+    component.listaExames.push(exame)
+    expect(component.listaExames.length).toBe(1)
+    populateMaterialFields()
     const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
     await component.onFotosEmbalagem(fotos)
     const exameAtual = component.getExameAtual()
-    expect(exameAtual.material.fotos.embalagem).toEqual(fotos)
+    component.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).concluida).toBe(true)
+        expect(exame.material.fotos.embalagem).toEqual(fotos)
+      } else {
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).concluida).toBe(false)
+        expect(exame.material.fotos.embalagem).not.toEqual(fotos)
+      }
+    })
   })
 
   it("should update exame fotosLacre when calling onFotosLacre", async () => {
+    expect(component.listaExames.length).toBe(0)
+    component.listaExames.push(exame)
+    expect(component.listaExames.length).toBe(1)
+    populateMaterialFields()
     const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
     const fotos = ["foto1.jpg", "foto2.jpg"]
     await component.onFotosLacre(fotos)
     const exameAtual = component.getExameAtual()
-    expect(exameAtual.material.fotos.lacre).toEqual(fotos)
+    component.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).concluida).toBe(true)
+        expect(exame.material.fotos.lacre).toEqual(fotos)
+      } else {
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).concluida).toBe(false)
+        expect(exame.material.fotos.lacre).not.toEqual(fotos)
+      }
+    })
   })
 
   it("should update exame fotosMaterial when calling onFotosMaterial", async () => {
+    expect(component.listaExames.length).toBe(0)
+    component.listaExames.push(exame)
+    expect(component.listaExames.length).toBe(1)
+    populateMaterialFields()
     const nrMaterial = "0123/2024"
     component.getExame(nrMaterial)
     component.onChangeMaterialAtual(nrMaterial)
@@ -159,28 +188,30 @@ describe("MainPage", () => {
   })
 
   it("should initialize the material flow", () => {
+    expect(component.listaExames.length).toBe(0)
+    component.listaExames.push(exame)
+    expect(component.listaExames.length).toBe(1)
     populateMaterialFields()
     expect(component.currentStep()).toBe(STEP.RECEBER_MATERIAL)
-    expect(component.listaExames.length).toBe(1)
-    component.listaExames.forEach((exame) => {
-      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
-      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
-      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
-      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
-    })
+    expect(component.listaExames.length).toBe(4)
+    const exameAtual = component.getExameAtual()
     expect(component.materialAtual).toBe("0123/2024")
-    component.getExameAtual().setTarefaConcluida(TAREFAS.RECEBER_MATERIAL)
-    component.getExameAtual().setTarefaAtiva(TAREFAS.CONFERIR_LACRE)
-    component.getExameAtual().setTarefaConcluida(TAREFAS.CONFERIR_LACRE)
-    expect(component.getExameAtual().getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
-    expect(component.getExameAtual().getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
-    component.iniciarFluxoMaterial()
     component.listaExames.forEach((exame) => {
-      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
-      expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
-      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
-      expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+      if (exame.embalagem === exameAtual.embalagem) {
+        expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
+        expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+      }
     })
+    expect(component.listaExames[0].embalagem).toBe("")
+    expect(component.listaExames[1].embalagem.length).toBeGreaterThan(0)
+    expect(component.listaExames[1].embalagem).toBe(component.listaExames[2].embalagem)
+    expect(component.listaExames[2].embalagem).toBe(component.listaExames[3].embalagem)
+    expect(component.listaExames[0].getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(false)
+    expect(component.listaExames[0].getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
+    expect(component.listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
+    expect(component.listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
   })
 
   it("should update currentStep after RECEBER_MATERIAL", () => {
@@ -284,13 +315,29 @@ describe("MainPage", () => {
 
   // CONFERIR_LACRE = 1
   it("should update tarefas after RECEBER_MATERIAL", () => {
+    expect(component.listaExames.length).toBe(0)
+    component.listaExames.push(exame)
+    expect(component.listaExames.length).toBe(1)
     populateMaterialFields()
     component.receberMaterial()
     const exameAtual = component.getExameAtual()
-    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+    expect(exameAtual.material.numero).toBe("0123/2024")
+    component.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+        expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+      }
+    })
+    expect(component.listaExames[0].embalagem).toBe("")
+    expect(component.listaExames[1].embalagem.length).toBe(36)
+    expect(component.listaExames[1].embalagem).toBe(component.listaExames[2].embalagem)
+    expect(component.listaExames[2].embalagem).toBe(component.listaExames[3].embalagem)
+    expect(component.listaExames[0].getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(false)
+    expect(component.listaExames[0].getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(false)
+    expect(component.listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(false)
+    expect(component.listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
   })
 
   // FOTOGRAFAR_NR_LACRE = 2,
@@ -302,30 +349,38 @@ describe("MainPage", () => {
   // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
   // REGISTRAR_QTDE_SIM_CARDS = 9,
   it("should update tarefas after VERIFICAR_LACRE_CONFERE", () => {
+    expect(component.listaExames.length).toBe(0)
+    component.listaExames.push(exame)
+    expect(component.listaExames.length).toBe(1)
     populateMaterialFields()
     component.receberMaterial()
     component.registrarLacreConfere(true)
     const exameAtual = component.getExameAtual()
-    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.DESLACRAR_MATERIAL).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).concluida).toBe(false)
+    component.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
+        expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(true)
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_NR_LACRE).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_EMBALAGEM).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.DESLACRAR_MATERIAL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.DESLACRAR_MATERIAL).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.ETIQUETAR_MATERIAL).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).ativa).toBe(true)
+        expect(exame.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).concluida).toBe(false)
+      }
+    })
+    expect(component.listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
   })
 
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
@@ -472,7 +527,7 @@ describe("MainPage", () => {
 
   // REGISTRAR_FABRICANTE_MODELO = 22,
   // REGISTRAR_APARELHO_BLOQUEADO = 23,
-  it("should update tarefas after REGISTRAR_APARELHO_RECEBIDO_LIGADO", () => {
+  it("should update tarefas after REGISTRAR_FUNCIONAMENTO_TELA", () => {
     populateMaterialFields()
     component.receberMaterial()
     component.registrarLacreConfere(true)
@@ -654,56 +709,4 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(true)
   })
-
-  //   it("should update exame registrarLacreConfere when calling registrarLacreConfere", () => {
-  //     const value = true
-  //     component.registrarLacreConfere(value)
-  //     const exameAtual = component.getExameAtual()
-  //     expect(exameAtual.registrarLacreConfere).toBe(value)
-  //   })
-
-  //   it("should update exame registrarExcecaoLacre when calling registrarExcecaoLacre", () => {
-  //     component.registrarExcecaoLacre()
-  //     const exameAtual = component.getExameAtual()
-  //     expect(exameAtual.registrarExcecaoLacre).toBe(true)
-  //   })
-
-  //   it("should update exame registrarModoAviao when calling registrarModoAviao", () => {
-  //     const value = true
-  //     component.registrarModoAviao(value)
-  //     const exameAtual = component.getExameAtual()
-  //     expect(exameAtual.registrarModoAviao).toBe(value)
-  //   })
-
-  //   it("should update exame telaFuncionando when calling telaFuncionando", () => {
-  //     const value = true
-  //     component.telaFuncionando(value)
-  //     const exameAtual = component.getExameAtual()
-  //     expect(exameAtual.telaFuncionando).toBe(value)
-  //   })
-
-  //   it("should call the appropriate method when calling tirarFotoSimCard", () => {
-  //     spyOn(component, "onFotosSimCards")
-  //     component.tirarFotoSimCard()
-  //     expect(component.onFotosSimCards).toHaveBeenCalled()
-  //   })
-
-  //   it("should call the appropriate method when calling tirarFotoMemoryCard", () => {
-  //     spyOn(component, "onFotosMemoryCard")
-  //     component.tirarFotoMemoryCard()
-  //     expect(component.onFotosMemoryCard).toHaveBeenCalled()
-  //   })
-
-  //   it("should call the appropriate method when calling tirarFotoMaterial", () => {
-  //     spyOn(component, "onFotosMaterial")
-  //     component.tirarFotoMaterial()
-  //     expect(component.onFotosMaterial).toHaveBeenCalled()
-  //   })
-
-  //   it("should call the appropriate method when calling finalizar", () => {
-  //     spyOn(component, "printExame")
-  //     component.finalizar()
-  //     expect(component.printExame).toHaveBeenCalled()
-  //   })
-  // })
 })

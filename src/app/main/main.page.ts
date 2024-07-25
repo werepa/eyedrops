@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, enableProdMode, inject, OnInit } from "@angular/core"
+import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, enableProdMode, inject, OnInit } from "@angular/core"
 import {
   AbstractControl,
   FormArray,
@@ -21,6 +21,8 @@ import { defineCustomElements } from "@ionic/pwa-elements/loader"
 import { environment } from "src/environments/environment"
 import { TarefaComponent } from "../tarefa/tarefa.component"
 import { Exame, Material, Usuario } from "../models"
+import { v4 as uuidv4 } from "uuid"
+import { EtiquetaMaterialComponent } from "../etiqueta-material/etiqueta-material.component"
 
 defineCustomElements(window)
 if (environment.production) {
@@ -32,9 +34,17 @@ if (environment.production) {
   templateUrl: "./main.page.html",
   styleUrls: ["./main.page.scss"],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, GaleriaFotosComponent, FormsModule, TarefaComponent],
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    GaleriaFotosComponent,
+    FormsModule,
+    TarefaComponent,
+    EtiquetaMaterialComponent,
+  ],
 })
-export class MainPage implements OnInit {
+export class MainPage implements OnInit, AfterViewChecked {
   private alertController = inject(AlertController)
   isSmallScreen = false
   usuarioAtual: Usuario
@@ -50,7 +60,12 @@ export class MainPage implements OnInit {
   mostrarTarefasConcluidas = false
   tabAtual = "fluxo"
 
-  constructor(private authService: AuthService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
+  constructor(
+    private authService: AuthService,
+    private fb: FormBuilder,
+    private breakpointObserver: BreakpointObserver,
+    private cdr: ChangeDetectorRef
+  ) {
     this.usuarioAtual = this.authService.getUsuarioAtual()
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline })
   }
@@ -69,6 +84,26 @@ export class MainPage implements OnInit {
       senha: ["", SenhaValidator],
     })
     this.addMaterialControl()
+  }
+
+  ngAfterViewChecked() {
+    this.cdr.detectChanges()
+  }
+
+  isMaterialAtual(material: Material): boolean {
+    const materialAtual = this.getExameAtual().material
+    return material === materialAtual
+  }
+
+  // Função para retornar uma lista com todos os materiais
+  getListaMateriais(): Material[] {
+    const listaMateriais: Material[] = []
+    this.listaExames.forEach((exame) => {
+      if (exame.material && exame.material.numero) {
+        listaMateriais.push(exame.material)
+      }
+    })
+    return listaMateriais
   }
 
   currentStep(): STEP {
@@ -128,17 +163,27 @@ export class MainPage implements OnInit {
   }
 
   async onFotosEmbalagem(fotos: string[]) {
-    this.getExameAtual().material.fotos.embalagem = fotos
-    if (this.getExameAtual().material.fotos.embalagem.length > 0) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_EMBALAGEM)
-    }
+    const exameAtual = this.getExameAtual()
+    this.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        exame.material.fotos.embalagem = fotos
+        if (exame.material.fotos.embalagem.length > 0) {
+          exame.setTarefaConcluida(this.tarefas.FOTOGRAFAR_EMBALAGEM)
+        }
+      }
+    })
   }
 
   async onFotosLacre(fotos: string[]) {
-    this.getExameAtual().material.fotos.lacre = fotos
-    if (this.getExameAtual().material.fotos.lacre.length > 0) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_NR_LACRE)
-    }
+    const exameAtual = this.getExameAtual()
+    this.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        exame.material.fotos.lacre = fotos
+        if (exame.material.fotos.lacre.length > 0) {
+          exame.setTarefaConcluida(this.tarefas.FOTOGRAFAR_NR_LACRE)
+        }
+      }
+    })
   }
 
   async onFotosMaterial(fotos: string[]) {
@@ -170,14 +215,19 @@ export class MainPage implements OnInit {
   }
 
   iniciarFluxoMaterial() {
+    let primeiroMaterial: any
+    const embalagem = uuidv4()
     this.getMateriaisControls().forEach((material) => {
       const materialNumero = material.get("numero")?.value
       const materialUf = material.get("uf")?.value
       const exame = this.getExame(materialNumero, materialUf)
+      if (!exame.embalagem) exame.embalagem = embalagem
       this.onChangeMaterialAtual(exame.material.numero, exame.material.uf)
       this.getExameAtual().reset()
       this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+      if (!primeiroMaterial) primeiroMaterial = this.getExameAtual().material
     })
+    if (primeiroMaterial) this.onChangeMaterialAtual(primeiroMaterial.numero, primeiroMaterial.uf)
     this.getExameAtual().currentStep = this.step.RECEBER_MATERIAL
   }
 
@@ -205,9 +255,14 @@ export class MainPage implements OnInit {
   receberMaterial() {
     if (this.form.valid) {
       this.iniciarFluxoMaterial()
-      this.getExameAtual().setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
-      this.getExameAtual().currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
+      const exameAtual = this.getExameAtual()
+      this.listaExames.forEach((exame) => {
+        if (exame.embalagem === exameAtual.embalagem) {
+          exame.setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
+          exame.setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
+          exame.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
+        }
+      })
     }
   }
 
@@ -228,22 +283,27 @@ export class MainPage implements OnInit {
   // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
   // REGISTRAR_QTDE_SIM_CARDS = 9,
   registrarLacreConfere(value: boolean) {
-    if (value) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_NR_LACRE)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_EMBALAGEM)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_CODIGO_EPOL)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.DESLACRAR_MATERIAL)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.ETIQUETAR_MATERIAL)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
-      this.getExameAtual().currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
-    } else {
-      this.getExameAtual().reset()
-      this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
-      this.iniciarFluxoMaterial()
-    }
+    const exameAtual = this.getExameAtual()
+    this.listaExames.forEach((exame) => {
+      if (exame.embalagem === exameAtual.embalagem) {
+        if (value) {
+          exame.setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
+          exame.setTarefaAtiva(this.tarefas.FOTOGRAFAR_NR_LACRE)
+          exame.setTarefaAtiva(this.tarefas.FOTOGRAFAR_EMBALAGEM)
+          exame.setTarefaAtiva(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL)
+          exame.setTarefaAtiva(this.tarefas.REGISTRAR_CODIGO_EPOL)
+          exame.setTarefaAtiva(this.tarefas.DESLACRAR_MATERIAL)
+          exame.setTarefaAtiva(this.tarefas.ETIQUETAR_MATERIAL)
+          exame.setTarefaAtiva(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
+          exame.setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
+          exame.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
+        } else {
+          exame.reset()
+          exame.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+          this.iniciarFluxoMaterial()
+        }
+      }
+    })
   }
 
   registrarExcecaoLacre() {

@@ -2,6 +2,7 @@ import { Material, Usuario } from "."
 import { STEP, Tarefa, TAREFAS } from "./listas"
 
 export class Exame {
+  private _embalagem: string = ""
   private _tarefas: Tarefa[] = []
   private _currentStep: STEP = STEP.RECEBER_MATERIAL
 
@@ -183,6 +184,14 @@ export class Exame {
         concluida: false,
       })
     )
+  }
+
+  get embalagem(): string {
+    return this._embalagem
+  }
+
+  set embalagem(uuid: string) {
+    this._embalagem = uuid
   }
 
   get material(): Material {

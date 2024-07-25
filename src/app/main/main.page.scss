@@ -13,6 +13,10 @@ ion-card-subtitle {
   .lista-tarefas {
     padding: 0px;
   }
+
+  .small-text {
+    font-size: 10px!important;
+  }
  }
 
  .large-screen {
@@ -27,6 +31,9 @@ ion-card-subtitle {
     ion-card {
       margin-left: 0px;
     }
+  }
+  .small-text {
+  font-size: 12px!important;
   }
  }
 
@@ -57,6 +64,9 @@ ion-card-subtitle {
   padding: 20px 0 0 0;
 }
 
+.negrito {
+  font-weight: bold;
+}
 
 .visible {
   display: block;
