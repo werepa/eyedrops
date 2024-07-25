@@ -1,11 +1,26 @@
-<ion-label
-  [ngClass]="{
-'cinza':!isMaterialAtual,
-'negrito':isMaterialAtual,
-}"
-  *ngIf="exame"
->
-  <span class="small-text">Material</span> {{ exame.material.numero
-  }}<span class="small-text"> {{ exame.material.uf }} </span>
-  <ion-badge color="warning">{{ qtdePendencias() }}</ion-badge>
-</ion-label>
+<ion-grid>
+  <ion-row class="ion-justify-content-between">
+    <ion-col size="6">
+      <ion-label
+        [ngClass]="{
+          cinza: !isMaterialAtual,
+          negrito: isMaterialAtual
+        }"
+        *ngIf="exame"
+      >
+        <span class="small-text">Material</span> {{ exame.material.numero }}
+        <span class="small-text"> {{ exame.material.uf }} </span>
+      </ion-label>
+    </ion-col>
+    <ion-col size="2">
+      <ion-label>
+        <ion-badge color="warning">{{ qtdePendencias() }}</ion-badge>
+      </ion-label>
+    </ion-col>
+    <ion-col size="4" class="ion-text-end">
+      <ion-label>
+        {{ getUsuarioResumido() }}
+      </ion-label>
+    </ion-col>
+  </ion-row>
+</ion-grid>

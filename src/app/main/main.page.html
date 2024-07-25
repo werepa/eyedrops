@@ -1,20 +1,21 @@
-<ion-header>
+<ion-header
+  [ngClass]="{
+  'small-screen': isSmallScreen,
+  'large-screen': !isSmallScreen
+}"
+>
   <ion-toolbar color="primary">
-    <ion-title>Fluxo de Material</ion-title>
+    <ion-title *ngIf="!materialAtual">Fluxo de Material</ion-title>
+    <ion-title *ngIf="materialAtual">
+      {{ getExameAtual().material.numero}}
+      <span class="small-text"> {{ getExameAtual().material.uf }} </span>
+    </ion-title>
     <ion-buttons slot="end" *ngIf="materialAtual">
       <ion-button (click)="printExame()">
         <ion-icon slot="icon-only" name="print-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-header>
-
-<ion-content
-  [ngClass]="{
-  'small-screen': isSmallScreen,
-  'large-screen': !isSmallScreen
-}"
->
   <ion-segment [(ngModel)]="selectedTab">
     <ion-segment-button value="materiais" *ngIf="getListaMateriais().length" (click)="onChangeTab()">
       <ion-label>Materiais</ion-label>
@@ -29,15 +30,20 @@
       <ion-label>Fotos</ion-label>
     </ion-segment-button>
   </ion-segment>
+</ion-header>
 
+<ion-content
+  [ngClass]="{
+  'small-screen': isSmallScreen,
+  'large-screen': !isSmallScreen
+}"
+>
   <ion-grid>
     <ion-row *ngIf="selectedTab==='materiais'">
       <ion-col size="12" size-sm="8" offset-sm="2" class="lista-materiais">
-        <ion-list>
-          <ion-item *ngFor="let exame of listaExames">
-            <app-etiqueta-material [exame]="exame" [isMaterialAtual]="isMaterialAtual(exame.material)" />
-          </ion-item>
-        </ion-list>
+        <ion-item *ngFor="let exame of listaExames">
+          <app-etiqueta-material [exame]="exame" [isMaterialAtual]="isMaterialAtual(exame.material)" />
+        </ion-item>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='fluxo'">

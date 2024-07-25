@@ -17,4 +17,8 @@ export class EtiquetaMaterialComponent {
   qtdePendencias() {
     return this.exame?.tarefas.filter((tarefa) => tarefa.ativa && !tarefa.concluida).length
   }
+
+  getUsuarioResumido() {
+    return this.exame?.getUsuarioAtual().nome.split(" ")[0]
+  }
 }
