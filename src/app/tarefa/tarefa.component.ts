@@ -23,6 +23,5 @@ export class TarefaComponent {
 
   toggleHistorico() {
     this.mostrarHistorico = !this.mostrarHistorico
-    console.log(this.mostrarHistorico)
   }
 }

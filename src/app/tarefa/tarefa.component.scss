@@ -5,6 +5,27 @@
 
  .historico {
   font-size:12px;
+  display: block;
+  width:100%;
+  .log {
+    margin: 5px 5px 5px 20px;
+    background-color: #f0f0f0;
+    border:1px solid grey;
+    display: block;
+    width:100%;
+    .nome {
+      display: inline-block;
+      padding:3px 7px;
+    }
+    .perfil {
+      display: inline-block;
+      padding:3px 7px;
+    }
+    .data {
+      display: inline-block;
+      padding:3px 7px;
+    }
+  }
  }
 
 .visible {
@@ -21,4 +42,9 @@
 
 .concluida {
   color:blue;
+}
+
+.tarefa {
+  display: block;
+  width:100%;
 }

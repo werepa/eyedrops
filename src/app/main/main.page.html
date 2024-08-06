@@ -48,19 +48,22 @@
     </ion-row>
     <ion-row *ngIf="selectedTab==='fluxo'">
       <ion-col size="12" size-sm="7" class="lista-fluxo">
-        <ion-item *ngIf="!materialAtual">
+        <ion-item class="small-item" *ngIf="!materialAtual">
           <ion-label>
             <ion-icon class="transparente" name="checkmark-outline" slot="icon-only"></ion-icon>
             Receber o material na secretaria do SETEC
           </ion-label>
         </ion-item>
         <section *ngIf="materialAtual">
-          <app-tarefa
-            [isSmallScreen]="isSmallScreen"
-            [tarefa]="getExameAtual().getTarefa(t)"
-            [mostrarTarefasConcluidas]="mostrarTarefasConcluidas"
-            *ngFor="let t of getRange()"
-          />
+          <ng-container *ngFor="let tarefa of getExameAtual().tarefas">
+            <ion-item class="small-item" *ngIf="tarefa.ativa && (!tarefa.concluida || mostrarTarefasConcluidas)">
+              <app-tarefa
+                [isSmallScreen]="isSmallScreen"
+                [tarefa]="tarefa"
+                [mostrarTarefasConcluidas]="mostrarTarefasConcluidas"
+              />
+            </ion-item>
+          </ng-container>
         </section>
       </ion-col>
       <ion-col size="12" size-sm="5" class="lista-perguntas">

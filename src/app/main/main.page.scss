@@ -4,6 +4,14 @@ ion-card-subtitle {
   text-align: center;
 }
 
+.small-item {
+  --min-height: 32px; /* Ajuste a altura mínima conforme necessário */
+  --padding-start: 8px; /* Ajuste o padding conforme necessário */
+  --padding-end: 8px; /* Ajuste o padding conforme necessário */
+  --inner-padding-top: 4px; /* Ajuste o padding interno conforme necessário */
+  --inner-padding-bottom: 4px; /* Ajuste o padding interno conforme necessário */
+}
+
 .small-screen {
 
   ion-item {
