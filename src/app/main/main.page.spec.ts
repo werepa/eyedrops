@@ -313,6 +313,7 @@ describe("MainPage", () => {
     expect(component.currentStep()).toBe(STEP.VERIFICAR_EXTRACAO_OK)
   })
 
+  // RECEBER_MATERIAL = 0,
   // CONFERIR_LACRE = 1
   it("should update tarefas after RECEBER_MATERIAL", () => {
     expect(component.listaExames.length).toBe(0)

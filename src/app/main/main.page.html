@@ -11,6 +11,9 @@
       <span class="small-text"> {{ getExameAtual().material.uf }} </span>
     </ion-title>
     <ion-buttons slot="end" *ngIf="materialAtual">
+      <ion-button (click)="addExame()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="printExame()">
         <ion-icon slot="icon-only" name="print-outline"></ion-icon>
       </ion-button>

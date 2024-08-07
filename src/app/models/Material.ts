@@ -100,24 +100,32 @@ export class Material {
     this._senha = senha
   }
 
+  public equal(numero: string, uf: string): boolean {
+    return this._numero === this.formatNumber(numero) && this._uf === uf.toUpperCase()
+  }
+
   // verifica se o número do material possui ano, caso contrário adiciona o ano atual
   // deve seguir o padrão "0001/2021"
-  private filterNumero(numero: string) {
+  private formatNumber(numero: string) {
     const regex = /^\d{1,4}\/\d{2,4}$/ // Verifica se segue o padrão "1/21", "0001/2021", etc.
     if (!regex.test(numero)) {
       // Se não seguir o padrão, adiciona o ano atual
       const currentYear = new Date().getFullYear()
       // Garante que o número antes da barra tenha quatro dígitos
       const formattedNumber = numero.padStart(4, "0")
-      this._numero = `${formattedNumber}/${currentYear}`
+      return `${formattedNumber}/${currentYear}`
     } else {
       // Se já seguir o padrão, apenas define o número
       // Divide o número para garantir que a parte do ano esteja correta
       const parts = numero.split("/")
       const yearPart = parts[1].length === 2 ? `20${parts[1]}` : parts[1]
       const numberPart = parts[0].padStart(4, "0")
-      this._numero = `${numberPart}/${yearPart}`
+      return `${numberPart}/${yearPart}`
     }
+  }
+
+  private filterNumero(numero: string) {
+    this._numero = this.formatNumber(numero)
   }
 
   // deve seguir o padrão "0001/2021" ou "0001/21" e o segundo parâmetro deve ser um ano entre 2020 e o ano atual

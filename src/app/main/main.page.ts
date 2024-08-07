@@ -90,7 +90,17 @@ export class MainPage implements OnInit, AfterViewChecked {
     this.cdr.detectChanges()
   }
 
+  // limpa o formulário e reinicia o fluxo de material e muda para a tab fluxo
+  addExame() {
+    this.form.reset()
+    this.form.get("materiais")?.setValue([{ numero: "", uf: this.usuarioAtual.uf }])
+    this.selectedTab = "fluxo"
+    this.materialAtual = ""
+    this.materialAtualUF = this.usuarioAtual.uf
+  }
+
   isMaterialAtual(material: Material): boolean {
+    if (!this.materialAtual) return false
     const materialAtual = this.getExameAtual().material
     return material === materialAtual
   }
@@ -120,6 +130,9 @@ export class MainPage implements OnInit, AfterViewChecked {
   }
 
   onChangeTab() {
+    if (!this.materialAtual) {
+      this.onChangeMaterialAtual(this.getListaMateriais()[0].numero)
+    }
     this.tabAtual = this.selectedTab
   }
 
@@ -148,7 +161,7 @@ export class MainPage implements OnInit, AfterViewChecked {
     if (!uf) {
       uf = this.usuarioAtual.uf
     }
-    let exame = this.listaExames.find((exame) => exame.material.numero === nrMaterial && exame.material.uf === uf)
+    let exame = this.listaExames.find((exame) => exame.material.equal(nrMaterial, uf))
     if (!exame) {
       exame = new Exame(new Material(nrMaterial), this.usuarioAtual)
       this.listaExames.push(exame)
@@ -220,12 +233,15 @@ export class MainPage implements OnInit, AfterViewChecked {
     this.getMateriaisControls().forEach((material) => {
       const materialNumero = material.get("numero")?.value
       const materialUf = material.get("uf")?.value
+      const existeMaterial = this.listaExames.some((exame) => exame.material.equal(materialNumero, materialUf))
       const exame = this.getExame(materialNumero, materialUf)
       if (!exame.embalagem) exame.embalagem = embalagem
       this.onChangeMaterialAtual(exame.material.numero, exame.material.uf)
-      this.getExameAtual().reset()
-      this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
-      if (!primeiroMaterial) primeiroMaterial = this.getExameAtual().material
+      if (!existeMaterial) {
+        this.getExameAtual().reset()
+        this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+        if (!primeiroMaterial) primeiroMaterial = this.getExameAtual().material
+      }
     })
     if (primeiroMaterial) this.onChangeMaterialAtual(primeiroMaterial.numero, primeiroMaterial.uf)
     this.getExameAtual().currentStep = this.step.RECEBER_MATERIAL
@@ -252,6 +268,8 @@ export class MainPage implements OnInit, AfterViewChecked {
       .then((alert) => alert.present())
   }
 
+  // RECEBER_MATERIAL = 0,
+  // VERIFICAR_MATERIAL_LACRADO = 1,
   receberMaterial() {
     if (this.form.valid) {
       this.iniciarFluxoMaterial()
