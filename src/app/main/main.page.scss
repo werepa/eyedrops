@@ -56,6 +56,10 @@ ion-card-subtitle {
   color: gray!important;
 }
 
+.azul {
+  color:#0054e9!important;
+}
+
 .lista-fluxo {
   padding: 20px 20px 0 0;
 }
@@ -66,6 +70,12 @@ ion-card-subtitle {
 
 .dados {
   padding: 20px 0 0 0;
+  ion-select::part(label){
+    color: gray!important;
+  }
+  ion-select::part(text){
+    color: #0054e9;
+  }
 }
 
 .fotos {
@@ -89,11 +99,15 @@ ion-card-subtitle {
 }
 
 .concluida {
-  color:blue;
+  color:#0054e9;
 }
 
 .bordered {
   border:1px solid black;
+}
+
+.senha-fornecida-usuario {
+  font-weight: bold;
 }
 
 

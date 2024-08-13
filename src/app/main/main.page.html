@@ -19,7 +19,13 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-segment [(ngModel)]="selectedTab">
+  <ion-segment
+    [ngClass]="{
+    'small-screen': isSmallScreen,
+    'large-screen': !isSmallScreen
+  }"
+    [(ngModel)]="selectedTab"
+  >
     <ion-segment-button value="materiais" *ngIf="getListaMateriais().length" (click)="onChangeTab()">
       <ion-label>Materiais</ion-label>
     </ion-segment-button>
@@ -249,6 +255,20 @@
           </ion-card-content>
         </ion-card>
 
+        <!-- Carregar bateria -->
+        <ion-card *ngIf="mostrarBateria && getExameAtual().material.bateria !== bateriaStatus.CARGA_COMPLETA">
+          <ion-card-content>
+            <ion-card-subtitle> Bateria </ion-card-subtitle>
+            <ion-item>
+              <ion-select label="Bateria" interface="popover">
+                <ion-select-option value=""></ion-select-option>
+                <ion-select-option value="0">Carregando</ion-select-option>
+                <ion-select-option value="1">Carga completa</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+
         <!-- Verificar Aparelho Bloqueado -->
         <ion-card *ngIf="currentStep() === step.VERIFICAR_TELEFONE_BLOQUEADO">
           <ion-card-content>
@@ -278,7 +298,7 @@
               <ion-button
                 expand="full"
                 color="primary"
-                (click)="registrarSenhaFornecida(formSenha.get('senhaFornecidaUsuario')?.value === '1', form.get('senha')?.value)"
+                (click)="registrarSenhaFornecida(formSenha.get('senhaFornecidaUsuario')?.value === '1', formSenha.get('senha')?.value)"
                 [disabled]="!formSenha.valid"
               >
                 Continuar
@@ -298,44 +318,167 @@
             <ion-button expand="full" color="danger" (click)="registrarModoAviao(false)">Não</ion-button>
           </ion-card-content>
         </ion-card>
+
+        <!-- Foto -->
+        <ion-card *ngIf="isFotoMaterialVisible()">
+          <ion-card-content>
+            <ion-toolbar>
+              <ion-card-subtitle
+                ><div>{{ getExameAtual().material.numero }}</div>
+                <div class="senha-fornecida-usuario" *ngIf="getExameAtual().material.senha">
+                  Senha: {{getExameAtual().material.senha}}
+                </div>
+              </ion-card-subtitle>
+            </ion-toolbar>
+            <div class="foto-container">
+              <img [src]="'data:image/jpeg;base64,' + getExameAtual().material.fotos.detalhes[0]" />
+            </div>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='dados'">
-      <ion-col size="12" size-sm="6" offset-sm="3" class="dados">
-        <!-- Estado de Conservação -->
-        <ion-card>
-          <ion-card-content>
-            <ion-card-subtitle> Estado do Material </ion-card-subtitle>
-            <ion-item>
-              <ion-label>Estado de Conservação</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Registrar Defeitos Observados</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Registrar Celular Recebido Ligado/Desligado</ion-label>
-              <ion-input type="text"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Ligar Celular</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>Abrir Extrações no Physical Analyzer</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>Verificar Chats</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>Verificar NR Assinante Operadora</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-label>Verificar Dados Usuário</ion-label>
-            </ion-item>
-            <ion-button expand="full" (click)="finalizar()">Finalizar</ion-button>
-          </ion-card-content>
-        </ion-card>
+      <ion-col size="12" offset-sm="3" size-sm="6" class="dados">
+        <ion-item>
+          <ion-label class="cinza" position="stacked">Descrição do aparelho</ion-label>
+          <ion-textarea class="azul"></ion-textarea>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Estado de Conservação" interface="popover">
+            <ion-select-option value="Bom">Bom</ion-select-option>
+            <ion-select-option value="Regular">Regular</ion-select-option>
+            <ion-select-option value="Ruim">Ruim</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Aparelho recebido ligado?" interface="popover">
+            <ion-select-option value="1">Sim</ion-select-option>
+            <ion-select-option value="0">Não</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Aparência da tela" interface="popover">
+            <ion-select-option value="Vidro Ok">Vidro Ok</ion-select-option>
+            <ion-select-option value="Vidro trincado">Vidro trincado</ion-select-option>
+            <ion-select-option value="Vidro quebrado">Vidro quebrado</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Funcionamento da tela" interface="popover">
+            <ion-select-option value="Normal">Normal</ion-select-option>
+            <ion-select-option value="Parcial">Parcial</ion-select-option>
+            <ion-select-option value="Intermitente">Intermitente</ion-select-option>
+            <ion-select-option value="Não Funciona">Não Funciona</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Funcionamento do touch" interface="popover">
+            <ion-select-option value="Normal">Normal</ion-select-option>
+            <ion-select-option value="Parcial">Parcial</ion-select-option>
+            <ion-select-option value="Não Funciona">Não Funciona</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Conector dados" interface="popover">
+            <ion-select-option value="Normal">Normal</ion-select-option>
+            <ion-select-option value="Apenas carregamento">Apenas carregamento</ion-select-option>
+            <ion-select-option value="Apenas dados">Apenas dados</ion-select-option>
+            <ion-select-option value="Não Funciona">Não Funciona</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label class="cinza" position="stacked">Outros defeitos observados</ion-label>
+          <ion-input class="azul ion-text-right" type="text"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Qtde Sim Cards" interface="popover">
+            <ion-select-option value="0">0</ion-select-option>
+            <ion-select-option value="1">1</ion-select-option>
+            <ion-select-option value="2">2</ion-select-option>
+            <ion-select-option value="3">3</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Sim Card 1" interface="popover">
+            <ion-select-option value="Claro">Claro</ion-select-option>
+            <ion-select-option value="Oi">Oi</ion-select-option>
+            <ion-select-option value="Tim">Tim</ion-select-option>
+            <ion-select-option value="Vivo">Vivo</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Sim Card 2" interface="popover">
+            <ion-select-option value="Claro">Claro</ion-select-option>
+            <ion-select-option value="Oi">Oi</ion-select-option>
+            <ion-select-option value="Tim">Tim</ion-select-option>
+            <ion-select-option value="Vivo">Vivo</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Sim Card 3" interface="popover">
+            <ion-select-option value="Claro">Claro</ion-select-option>
+            <ion-select-option value="Oi">Oi</ion-select-option>
+            <ion-select-option value="Tim">Tim</ion-select-option>
+            <ion-select-option value="Vivo">Vivo</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Qtde Memory Cards" interface="popover">
+            <ion-select-option value="0">0</ion-select-option>
+            <ion-select-option value="1">1</ion-select-option>
+            <ion-select-option value="2">2</ion-select-option>
+            <ion-select-option value="3">3</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Fabricante">
+            <ion-select-option value="Apple">Apple</ion-select-option>
+            <ion-select-option value="Asus">Asus</ion-select-option>
+            <ion-select-option value="LG">LG</ion-select-option>
+            <ion-select-option value="Motorola">Motorola</ion-select-option>
+            <ion-select-option value="Nokia">Nokia</ion-select-option>
+            <ion-select-option value="Samsung">Samsung</ion-select-option>
+            <ion-select-option value="Sony">Sony</ion-select-option>
+            <ion-select-option value="Xiaomi">Xiaomi</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label class="cinza">Modelo</ion-label>
+          <ion-input class="azul ion-text-right" type="text"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair SIM CARD 1</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair SIM CARD 2</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair SIM CARD 3</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair Memory CARD 1</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair Memory CARD 2</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair Memory CARD 3</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Extrair Dados do aparelho examinado</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Abrir Extrações no Physical Analyzer</ion-checkbox>
+        </ion-item>
+        <ion-item>
+          <ion-checkbox labelPlacement="start">Verificar Chats</ion-checkbox>
+        </ion-item>
+        <br />
+        <br />
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='fotos'">
@@ -359,7 +502,7 @@
         <app-galeria-fotos
           titulo="Fotos Material Etiquetado"
           [fotos]="getExameAtual().material.fotos.detalhes"
-          [mostrar]="getExameAtual().getTarefa(tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa"
+          [mostrar]="isFotosMaterialEtiquetadoVisible()"
           (tirarFoto)="onFotosMaterial($event)"
           (excluirFoto)="onFotosMaterial($event)"
         />
@@ -367,7 +510,7 @@
         <app-galeria-fotos
           titulo="Fotos SIM Cards"
           [fotos]="getExameAtual().material.fotos.simCards"
-          [mostrar]="getExameAtual().getTarefa(tarefas.FOTOGRAFAR_SIM_CARD).ativa"
+          [mostrar]="isFotosSimCardsVisible()"
           (tirarFoto)="onFotosSimCards($event)"
           (excluirFoto)="onFotosSimCards($event)"
         />
@@ -375,7 +518,7 @@
         <app-galeria-fotos
           titulo="Fotos Memory Card"
           [fotos]="getExameAtual().material.fotos.memoryCard"
-          [mostrar]="getExameAtual().getTarefa(tarefas.FOTOGRAFAR_MEMORY_CARD).ativa"
+          [mostrar]="isFotosMemoryCardVisible()"
           (tirarFoto)="onFotosMemoryCard($event)"
           (excluirFoto)="onFotosMemoryCard($event)"
         />

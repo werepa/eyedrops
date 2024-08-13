@@ -1,10 +1,11 @@
-import { TELA_STATUS } from "./listas"
+import { BATERIA_STATUS, TELA_STATUS } from "./listas"
 
 export class Material {
   private _numero: string = ""
   private _uf: string = ""
   private _lacre: string = ""
   private _recebidoLigado: boolean = false
+  private _bateria: BATERIA_STATUS = BATERIA_STATUS.NAO_VERIFICADA
   private _telaFuncionando: TELA_STATUS = TELA_STATUS.NAO_VERIFICADA
   private _modoAviao: boolean = false
   private _bloqueado: boolean = false
@@ -58,6 +59,14 @@ export class Material {
 
   set recebidoLigado(ligado: boolean) {
     this._recebidoLigado = ligado
+  }
+
+  get bateria(): BATERIA_STATUS {
+    return this._bateria
+  }
+
+  set bateria(status: BATERIA_STATUS) {
+    this._bateria = status
   }
 
   get telaFuncionando(): TELA_STATUS {

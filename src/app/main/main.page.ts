@@ -14,7 +14,7 @@ import { CommonModule } from "@angular/common"
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout"
 import { addIcons } from "ionicons"
 import { addOutline, camera, cameraOutline, checkmarkOutline, printOutline, trashOutline } from "ionicons/icons"
-import { STEP, TAREFAS, TELA_STATUS } from "../models/listas"
+import { BATERIA_STATUS, STEP, TAREFAS, TELA_STATUS } from "../models/listas"
 import { AuthService } from "../services/auth.service"
 import { GaleriaFotosComponent } from "../galeria-fotos/galeria-fotos.component"
 import { defineCustomElements } from "@ionic/pwa-elements/loader"
@@ -53,11 +53,13 @@ export class MainPage implements OnInit, AfterViewChecked {
   step = STEP
   tarefas = TAREFAS
   telaStatus = TELA_STATUS
+  bateriaStatus = BATERIA_STATUS
   selectedTab = "fluxo"
   listaExames: Exame[] = []
   materialAtual = ""
   materialAtualUF = ""
   mostrarTarefasConcluidas = false
+  mostrarBateria = false
   tabAtual = "fluxo"
 
   constructor(
@@ -91,12 +93,18 @@ export class MainPage implements OnInit, AfterViewChecked {
   }
 
   // limpa o formulário e reinicia o fluxo de material e muda para a tab fluxo
+  // deve manter apenas o primeiro elemento em this.form.controls.materiais
   addExame() {
     this.form.reset()
-    this.form.get("materiais")?.setValue([{ numero: "", uf: this.usuarioAtual.uf }])
+    const materiaisArray = this.form.get("materiais") as FormArray
+    while (materiaisArray.length > 1) {
+      materiaisArray.removeAt(1)
+    }
+    materiaisArray?.setValue([{ numero: "", uf: this.usuarioAtual.uf }])
     this.selectedTab = "fluxo"
     this.materialAtual = ""
     this.materialAtualUF = this.usuarioAtual.uf
+    this.mostrarBateria = false
   }
 
   isMaterialAtual(material: Material): boolean {
@@ -127,6 +135,34 @@ export class MainPage implements OnInit, AfterViewChecked {
       this.mostrarTarefasConcluidas = !this.mostrarTarefasConcluidas
     }
     this.onChangeTab()
+  }
+
+  isFotosMaterialEtiquetadoVisible(): boolean {
+    return (
+      this.getExameAtual().material.fotos.embalagem.length > 0 &&
+      this.getExameAtual().material.fotos.lacre.length > 0 &&
+      this.getExameAtual().getTarefa(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa
+    )
+  }
+
+  isFotosSimCardsVisible(): boolean {
+    return (
+      this.getExameAtual().material.fotos.embalagem.length > 0 &&
+      this.getExameAtual().material.fotos.lacre.length > 0 &&
+      this.getExameAtual().getTarefa(this.tarefas.FOTOGRAFAR_SIM_CARD).ativa
+    )
+  }
+
+  isFotosMemoryCardVisible(): boolean {
+    return (
+      this.getExameAtual().material.fotos.embalagem.length > 0 &&
+      this.getExameAtual().material.fotos.lacre.length > 0 &&
+      this.getExameAtual().getTarefa(this.tarefas.FOTOGRAFAR_MEMORY_CARD).ativa
+    )
+  }
+
+  isFotoMaterialVisible(): boolean {
+    return this.materialAtual !== "" && this.getExameAtual().material.fotos.detalhes.length > 0
   }
 
   onChangeTab() {
@@ -371,6 +407,7 @@ export class MainPage implements OnInit, AfterViewChecked {
     this.getExameAtual().setTarefaAtiva(this.tarefas.LIGAR_APARELHO)
     this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
     this.getExameAtual().currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
+    this.mostrarBateria = true
   }
 
   // REGISTRAR_FABRICANTE_MODELO = 22,

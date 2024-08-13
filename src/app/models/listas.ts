@@ -69,6 +69,12 @@ export enum TELA_STATUS {
   SEM_IMAGEM = 5,
 }
 
+export enum BATERIA_STATUS {
+  NAO_VERIFICADA = 0,
+  CARREGANDO = 1,
+  CARGA_COMPLETA = 2,
+}
+
 export type Log = {
   usuario: Usuario
   objetoAnterior: string
