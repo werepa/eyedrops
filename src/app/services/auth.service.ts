@@ -19,4 +19,8 @@ export class AuthService {
   getUsuarioAtual(): Usuario {
     return this.usuarioAtual
   }
+
+  logout() {
+    this.usuarioAtual = null
+  }
 }

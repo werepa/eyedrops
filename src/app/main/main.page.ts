@@ -23,6 +23,7 @@ import { TarefaComponent } from "../tarefa/tarefa.component"
 import { Exame, Material, Usuario } from "../models"
 import { v4 as uuidv4 } from "uuid"
 import { EtiquetaMaterialComponent } from "../etiqueta-material/etiqueta-material.component"
+import { ExameStore } from "../store/exame.store"
 
 defineCustomElements(window)
 if (environment.production) {
@@ -61,6 +62,7 @@ export class MainPage implements OnInit, AfterViewChecked {
   mostrarTarefasConcluidas = false
   mostrarBateria = false
   tabAtual = "fluxo"
+  exameStore = inject(ExameStore)
 
   constructor(
     private authService: AuthService,

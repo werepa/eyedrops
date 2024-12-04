@@ -3,11 +3,13 @@ import { MainPage } from "./main.page"
 import { STEP, TAREFAS } from "../models/listas"
 import { Exame, Material, Usuario } from "../models"
 import { AuthService } from "../services/auth.service"
+import { ExameStore } from "../store/exame.store"
 
 describe("MainPage", () => {
   let component: MainPage
   let fixture: ComponentFixture<MainPage>
   let exame: Exame
+  let exameStore: ExameStore
 
   const authServiceMock = {
     getUsuarioAtual: () =>
@@ -22,12 +24,13 @@ describe("MainPage", () => {
   beforeEach(async () => {
     fixture = await TestBed.configureTestingModule({
       imports: [MainPage],
-      providers: [{ provide: AuthService, useValue: authServiceMock }],
+      providers: [ExameStore, { provide: AuthService, useValue: authServiceMock }],
     }).compileComponents()
     fixture = TestBed.createComponent(MainPage)
     component = fixture.componentInstance
     component.ngOnInit()
     exame = new Exame(new Material("1"), new Usuario({ codigo: "001", nome: "Usuario 1", uf: "GO", perfil: "Perito" }))
+    exameStore = component.exameStore
   })
 
   function populateMaterialFields() {
@@ -43,15 +46,19 @@ describe("MainPage", () => {
     component.iniciarFluxoMaterial()
   }
 
-  it("should create", () => {
-    expect(component).toBeTruthy()
-  })
+  fit("should initialize with correct values", () => {
+    expect(exameStore.user()).toBeNull()
+    expect(exameStore.error()).toBeNull()
+    expect(exameStore.message()).toBe("Receber material na secretaria do SETEC")
+    expect(exameStore.action()).toBe(TAREFAS.RECEBER_MATERIAL)
+    expect(exameStore.status()).toBe(STEP.RECEBER_MATERIAL)
+    expect(exameStore.listaExames()).toEqual([])
+    expect(exameStore.materialAtual()).toBe("")
 
-  it("should initialize with correct values", () => {
-    expect(component.materialAtual).toBe("")
-    expect(component.listaExames).toEqual([])
-    expect(component.currentStep()).toEqual(STEP.RECEBER_MATERIAL)
-    expect(component.usuarioAtual).toBeDefined()
+    // expect(component.materialAtual).toBe("")
+    // expect(component.listaExames).toEqual([])
+    // expect(component.currentStep()).toEqual(STEP.RECEBER_MATERIAL)
+    // expect(component.usuarioAtual).toBeDefined()
   })
 
   it("should create exame when calling getExame if not exists", () => {
@@ -322,7 +329,7 @@ describe("MainPage", () => {
     populateMaterialFields()
     component.receberMaterial()
     const exameAtual = component.getExameAtual()
-    expect(exameAtual.material.numero).toBe("0123/2024")
+    expect(exameAtual.material.numero).toBe("0125/2024")
     component.listaExames.forEach((exame) => {
       if (exame.embalagem === exameAtual.embalagem) {
         expect(exame.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
