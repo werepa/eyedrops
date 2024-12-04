@@ -1,7 +1,7 @@
 import { CommonModule } from "@angular/common"
 import { Component, Input } from "@angular/core"
 import { IonicModule } from "@ionic/angular"
-import { Exame, Material } from "../models"
+import { Exame, Material, Usuario } from "../models"
 
 @Component({
   selector: "app-etiqueta-material",
@@ -11,14 +11,15 @@ import { Exame, Material } from "../models"
   styleUrl: "./etiqueta-material.component.scss",
 })
 export class EtiquetaMaterialComponent {
+  @Input() usuario?: Usuario
   @Input() exame?: Exame
-  @Input() isMaterialAtual?: boolean = false
+  @Input() isExameAtual?: boolean = false
 
   qtdePendencias() {
     return this.exame?.tarefas.filter((tarefa) => tarefa.ativa && !tarefa.concluida).length
   }
 
   getUsuarioResumido() {
-    return this.exame?.getUsuarioAtual().nome.split(" ")[0]
+    return this.usuario?.nome.split(" ")[0]
   }
 }

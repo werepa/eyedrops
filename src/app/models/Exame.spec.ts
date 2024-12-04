@@ -14,7 +14,7 @@ describe("Exame", () => {
       uf: "GO",
       perfil: "Perito",
     })
-    exame = new Exame(material, usuario)
+    exame = new Exame(material)
   })
 
   it("should create an instance of Exame", () => {
@@ -23,10 +23,6 @@ describe("Exame", () => {
 
   it("should have the correct material", () => {
     expect(exame.material).toBe(material)
-  })
-
-  it("should have the correct usuarioAtual", () => {
-    expect(exame.getUsuarioAtual()).toBe(usuario)
   })
 
   it("should have the correct currentStep", () => {
@@ -60,7 +56,7 @@ describe("Exame", () => {
 
   it("should set a tarefa as concluida", () => {
     const tarefaCodigo = TAREFAS.RECEBER_MATERIAL
-    exame.setTarefaConcluida(tarefaCodigo)
+    exame.setTarefaConcluida(tarefaCodigo, usuario)
     const tarefa = exame.getTarefa(tarefaCodigo)
     expect(tarefa.ativa).toBe(true)
     expect(tarefa.concluida).toBe(true)
@@ -80,8 +76,8 @@ describe("Exame", () => {
   })
 
   it("should get the completed tasks", () => {
-    exame.setTarefaConcluida(TAREFAS.RECEBER_MATERIAL)
-    exame.setTarefaConcluida(TAREFAS.CONFERIR_LACRE)
+    exame.setTarefaConcluida(TAREFAS.RECEBER_MATERIAL, usuario)
+    exame.setTarefaConcluida(TAREFAS.CONFERIR_LACRE, usuario)
     const completedTasks = exame.getTarefasConcluidas()
     expect(completedTasks.length).toBe(2)
     expect(completedTasks[0].codigo).toBe(TAREFAS.RECEBER_MATERIAL)
@@ -90,7 +86,7 @@ describe("Exame", () => {
 
   it("should reset the tarefas", () => {
     exame.setTarefaAtiva(TAREFAS.RECEBER_MATERIAL)
-    exame.setTarefaConcluida(TAREFAS.CONFERIR_LACRE)
+    exame.setTarefaConcluida(TAREFAS.CONFERIR_LACRE, usuario)
     exame.reset()
     const tarefas = exame.tarefas
     expect(tarefas.length).toBeGreaterThan(0)

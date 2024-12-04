@@ -6,7 +6,7 @@ export class Exame {
   private _tarefas: Tarefa[] = []
   private _currentStep: STEP = STEP.RECEBER_MATERIAL
 
-  constructor(private _material: Material, private _usuarioAtual: Usuario) {
+  constructor(private _material: Material) {
     this.reset()
   }
 
@@ -222,14 +222,6 @@ export class Exame {
     return this.tarefas.filter((tarefa) => tarefa.concluida)
   }
 
-  getUsuarioAtual(): Usuario {
-    return this._usuarioAtual
-  }
-
-  setUsuarioAtual(usuario: Usuario) {
-    this._usuarioAtual = usuario
-  }
-
   setTarefaAtiva(t: TAREFAS) {
     const tarefa = this.getTarefa(t)
     tarefa.ativa = true
@@ -240,12 +232,12 @@ export class Exame {
     tarefa.ativa = false
   }
 
-  setTarefaConcluida(t: TAREFAS) {
+  setTarefaConcluida(t: TAREFAS, usuario: Usuario) {
     const tarefa = this.getTarefa(t)
     tarefa.ativa = true
     tarefa.concluida = true
     tarefa.historico.push({
-      usuario: this._usuarioAtual,
+      usuario,
       objetoAnterior: JSON.stringify(tarefa),
       data: new Date(),
     })

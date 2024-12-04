@@ -109,8 +109,8 @@ export class Material {
     this._senha = senha
   }
 
-  public equal(numero: string, uf: string): boolean {
-    return this._numero === this.formatNumber(numero) && this._uf === uf.toUpperCase()
+  public equal(material: Material): boolean {
+    return this._numero === this.formatNumber(material.numero) && this._uf === material.uf.toUpperCase()
   }
 
   // verifica se o número do material possui ano, caso contrário adiciona o ano atual

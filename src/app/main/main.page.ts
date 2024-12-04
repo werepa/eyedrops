@@ -1,4 +1,13 @@
-import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, enableProdMode, inject, OnInit } from "@angular/core"
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  enableProdMode,
+  inject,
+  OnInit,
+  WritableSignal,
+} from "@angular/core"
 import {
   AbstractControl,
   FormArray,
@@ -23,7 +32,7 @@ import { TarefaComponent } from "../tarefa/tarefa.component"
 import { Exame, Material, Usuario } from "../models"
 import { v4 as uuidv4 } from "uuid"
 import { EtiquetaMaterialComponent } from "../etiqueta-material/etiqueta-material.component"
-import { ExameStore } from "../store/exame.store"
+import { ExameService, ExameState } from "../services/exame.service"
 
 defineCustomElements(window)
 if (environment.production) {
@@ -48,7 +57,6 @@ if (environment.production) {
 export class MainPage implements OnInit, AfterViewChecked {
   private alertController = inject(AlertController)
   isSmallScreen = false
-  usuarioAtual: Usuario
   form: FormGroup = new FormGroup([])
   formSenha: FormGroup = new FormGroup([])
   step = STEP
@@ -56,21 +64,20 @@ export class MainPage implements OnInit, AfterViewChecked {
   telaStatus = TELA_STATUS
   bateriaStatus = BATERIA_STATUS
   selectedTab = "fluxo"
-  listaExames: Exame[] = []
-  materialAtual = ""
-  materialAtualUF = ""
   mostrarTarefasConcluidas = false
   mostrarBateria = false
   tabAtual = "fluxo"
-  exameStore = inject(ExameStore)
+  state: WritableSignal<ExameState>
 
   constructor(
     private authService: AuthService,
+    private exameService: ExameService,
     private fb: FormBuilder,
     private breakpointObserver: BreakpointObserver,
     private cdr: ChangeDetectorRef
   ) {
-    this.usuarioAtual = this.authService.getUsuarioAtual()
+    this.state = this.exameService.state
+    this.onChangeUsuarioAtual(this.authService.getUsuarioAtual())
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline })
   }
 
@@ -102,23 +109,22 @@ export class MainPage implements OnInit, AfterViewChecked {
     while (materiaisArray.length > 1) {
       materiaisArray.removeAt(1)
     }
-    materiaisArray?.setValue([{ numero: "", uf: this.usuarioAtual.uf }])
+    materiaisArray?.setValue([{ numero: "", uf: this.state().usuarioAtual.uf }])
     this.selectedTab = "fluxo"
-    this.materialAtual = ""
-    this.materialAtualUF = this.usuarioAtual.uf
+    this.state.update((s) => (s.exameAtual = null))
     this.mostrarBateria = false
   }
 
-  isMaterialAtual(material: Material): boolean {
-    if (!this.materialAtual) return false
-    const materialAtual = this.getExameAtual().material
+  isExameAtual(material: Material): boolean {
+    if (!this.state().exameAtual) return false
+    const materialAtual = this.state().exameAtual.material
     return material === materialAtual
   }
 
   // Função para retornar uma lista com todos os materiais
   getListaMateriais(): Material[] {
     const listaMateriais: Material[] = []
-    this.listaExames.forEach((exame) => {
+    this.state().listaExames.forEach((exame) => {
       if (exame.material && exame.material.numero) {
         listaMateriais.push(exame.material)
       }
@@ -127,8 +133,8 @@ export class MainPage implements OnInit, AfterViewChecked {
   }
 
   currentStep(): STEP {
-    if (!this.materialAtual) return STEP.RECEBER_MATERIAL
-    const exameAtual = this.getExameAtual()
+    if (!this.state().exameAtual) return STEP.RECEBER_MATERIAL
+    const exameAtual = this.state().exameAtual
     return exameAtual ? exameAtual.currentStep : STEP.RECEBER_MATERIAL
   }
 
@@ -141,45 +147,50 @@ export class MainPage implements OnInit, AfterViewChecked {
 
   isFotosMaterialEtiquetadoVisible(): boolean {
     return (
-      this.getExameAtual().material.fotos.embalagem.length > 0 &&
-      this.getExameAtual().material.fotos.lacre.length > 0 &&
-      this.getExameAtual().getTarefa(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa
+      this.state().exameAtual.material.fotos.embalagem.length > 0 &&
+      this.state().exameAtual.material.fotos.lacre.length > 0 &&
+      this.state().exameAtual.getTarefa(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO).ativa
     )
   }
 
   isFotosSimCardsVisible(): boolean {
     return (
-      this.getExameAtual().material.fotos.embalagem.length > 0 &&
-      this.getExameAtual().material.fotos.lacre.length > 0 &&
-      this.getExameAtual().getTarefa(this.tarefas.FOTOGRAFAR_SIM_CARD).ativa
+      this.state().exameAtual.material.fotos.embalagem.length > 0 &&
+      this.state().exameAtual.material.fotos.lacre.length > 0 &&
+      this.state().exameAtual.getTarefa(this.tarefas.FOTOGRAFAR_SIM_CARD).ativa
     )
   }
 
   isFotosMemoryCardVisible(): boolean {
     return (
-      this.getExameAtual().material.fotos.embalagem.length > 0 &&
-      this.getExameAtual().material.fotos.lacre.length > 0 &&
-      this.getExameAtual().getTarefa(this.tarefas.FOTOGRAFAR_MEMORY_CARD).ativa
+      this.state().exameAtual.material.fotos.embalagem.length > 0 &&
+      this.state().exameAtual.material.fotos.lacre.length > 0 &&
+      this.state().exameAtual.getTarefa(this.tarefas.FOTOGRAFAR_MEMORY_CARD).ativa
     )
   }
 
   isFotoMaterialVisible(): boolean {
-    return this.materialAtual !== "" && this.getExameAtual().material.fotos.detalhes.length > 0
+    return this.state().exameAtual !== null && this.state().exameAtual.material.fotos.detalhes.length > 0
   }
 
   onChangeTab() {
-    if (!this.materialAtual) {
-      this.onChangeMaterialAtual(this.getListaMateriais()[0].numero)
+    if (!this.state().exameAtual) {
+      this.onChangeMaterialAtual(this.getListaMateriais()[0])
     }
     this.tabAtual = this.selectedTab
   }
 
-  onChangeMaterialAtual(nrMaterial: string, uf?: string) {
-    if (!uf) {
-      this.materialAtualUF = this.usuarioAtual.uf
-    }
-    this.materialAtual = nrMaterial
-    this.getExameAtual().setUsuarioAtual(this.usuarioAtual)
+  onChangeUsuarioAtual(usuario: Usuario) {
+    this.state.update((s) => ({ ...s, usuarioAtual: usuario }))
+  }
+
+  onChangeExameAtual(exame: Exame) {
+    this.state.update((s) => ({ ...s, exameAtual: exame }))
+  }
+
+  onChangeMaterialAtual(material: Material) {
+    const exame = this.getExame(material)
+    this.state.update((s) => ({ ...s, exameAtual: exame }))
   }
 
   get listaMateriais() {
@@ -190,73 +201,66 @@ export class MainPage implements OnInit, AfterViewChecked {
     const materialArray = this.form.get("materiais") as FormArray
     const newMaterialGroup = this.fb.group({
       numero: ["", nrMaterialValidator],
-      uf: [this.usuarioAtual.uf, Validators.required],
+      uf: [this.state().usuarioAtual.uf, Validators.required],
     })
     materialArray.push(newMaterialGroup)
   }
 
-  getExame(nrMaterial: string, uf?: string): Exame {
-    if (!uf) {
-      uf = this.usuarioAtual.uf
-    }
-    let exame = this.listaExames.find((exame) => exame.material.equal(nrMaterial, uf))
+  getExame(material: Material): Exame {
+    const listaExames = this.state().listaExames
+    let exame = listaExames.find((exame) => exame.material.equal(material))
     if (!exame) {
-      exame = new Exame(new Material(nrMaterial), this.usuarioAtual)
-      this.listaExames.push(exame)
+      exame = new Exame(material)
+      listaExames.push(exame)
     }
-    return exame
-  }
-
-  getExameAtual(): Exame {
-    const exame = this.getExame(this.materialAtual, this.materialAtualUF)
-    exame.setUsuarioAtual(this.usuarioAtual)
+    if (!this.state().exameAtual) this.state.update((s) => ({ ...s, exameAtual: exame }))
     return exame
   }
 
   async onFotosEmbalagem(fotos: string[]) {
-    const exameAtual = this.getExameAtual()
-    this.listaExames.forEach((exame) => {
+    const exameAtual = this.state().exameAtual
+    this.state().listaExames.forEach((exame) => {
       if (exame.embalagem === exameAtual.embalagem) {
         exame.material.fotos.embalagem = fotos
         if (exame.material.fotos.embalagem.length > 0) {
-          exame.setTarefaConcluida(this.tarefas.FOTOGRAFAR_EMBALAGEM)
+          exame.setTarefaConcluida(this.tarefas.FOTOGRAFAR_EMBALAGEM, this.state().usuarioAtual)
         }
       }
     })
   }
 
   async onFotosLacre(fotos: string[]) {
-    const exameAtual = this.getExameAtual()
-    this.listaExames.forEach((exame) => {
+    const exameAtual = this.state().exameAtual
+    this.state().listaExames.forEach((exame) => {
       if (exame.embalagem === exameAtual.embalagem) {
         exame.material.fotos.lacre = fotos
         if (exame.material.fotos.lacre.length > 0) {
-          exame.setTarefaConcluida(this.tarefas.FOTOGRAFAR_NR_LACRE)
+          exame.setTarefaConcluida(this.tarefas.FOTOGRAFAR_NR_LACRE, this.state().usuarioAtual)
         }
       }
     })
   }
 
   async onFotosMaterial(fotos: string[]) {
-    this.getExameAtual().material.fotos.detalhes = fotos
-    if (this.getExameAtual().material.fotos.detalhes.length > 0) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL)
-      this.getExameAtual().setTarefaConcluida(this.tarefas.ETIQUETAR_MATERIAL)
-      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
+    this.state().exameAtual.material.fotos.detalhes = fotos
+    if (this.state().exameAtual.material.fotos.detalhes.length > 0) {
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL, this.state().usuarioAtual)
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.ETIQUETAR_MATERIAL, this.state().usuarioAtual)
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO, this.state().usuarioAtual)
     }
   }
 
   async onFotosSimCards(fotos: string[]) {
-    this.getExameAtual().material.fotos.simCards = fotos
-    if (this.getExameAtual().material.fotos.simCards.length > 0) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_SIM_CARD)
+    this.state().exameAtual.material.fotos.simCards = fotos
+    if (this.state().exameAtual.material.fotos.simCards.length > 0) {
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.FOTOGRAFAR_SIM_CARD, this.state().usuarioAtual)
     }
   }
 
   async onFotosMemoryCard(fotos: string[]) {
-    this.getExameAtual().material.fotos.memoryCard = fotos
-    if (this.getExameAtual().material.fotos.memoryCard.length > 0) {
-      this.getExameAtual().setTarefaConcluida(this.tarefas.FOTOGRAFAR_MEMORY_CARD)
+    this.state().exameAtual.material.fotos.memoryCard = fotos
+    if (this.state().exameAtual.material.fotos.memoryCard.length > 0) {
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.FOTOGRAFAR_MEMORY_CARD, this.state().usuarioAtual)
     }
   }
 
@@ -268,21 +272,20 @@ export class MainPage implements OnInit, AfterViewChecked {
   iniciarFluxoMaterial() {
     let primeiroMaterial: any
     const embalagem = uuidv4()
-    this.getMateriaisControls().forEach((material) => {
-      const materialNumero = material.get("numero")?.value
-      const materialUf = material.get("uf")?.value
-      const existeMaterial = this.listaExames.some((exame) => exame.material.equal(materialNumero, materialUf))
-      const exame = this.getExame(materialNumero, materialUf)
+    this.getMateriaisControls().forEach((m) => {
+      const material = new Material(m.get("numero")?.value, m.get("uf")?.value)
+      const existeMaterial = this.state().listaExames.some((exame) => exame.material.equal(material))
+      const exame = this.getExame(material)
       if (!exame.embalagem) exame.embalagem = embalagem
-      this.onChangeMaterialAtual(exame.material.numero, exame.material.uf)
+      this.onChangeMaterialAtual(exame.material)
       if (!existeMaterial) {
-        this.getExameAtual().reset()
-        this.getExameAtual().setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
-        if (!primeiroMaterial) primeiroMaterial = this.getExameAtual().material
+        this.state().exameAtual.reset()
+        this.state().exameAtual.setTarefaAtiva(this.tarefas.RECEBER_MATERIAL)
+        if (!primeiroMaterial) primeiroMaterial = this.state().exameAtual.material
       }
     })
-    if (primeiroMaterial) this.onChangeMaterialAtual(primeiroMaterial.numero, primeiroMaterial.uf)
-    this.getExameAtual().currentStep = this.step.RECEBER_MATERIAL
+    if (primeiroMaterial) this.onChangeMaterialAtual(primeiroMaterial)
+    this.state().exameAtual.currentStep = this.step.RECEBER_MATERIAL
   }
 
   confirmaReiniciarProcesso() {
@@ -311,10 +314,10 @@ export class MainPage implements OnInit, AfterViewChecked {
   receberMaterial() {
     if (this.form.valid) {
       this.iniciarFluxoMaterial()
-      const exameAtual = this.getExameAtual()
-      this.listaExames.forEach((exame) => {
+      const exameAtual = this.state().exameAtual
+      this.state().listaExames.forEach((exame) => {
         if (exame.embalagem === exameAtual.embalagem) {
-          exame.setTarefaConcluida(this.tarefas.RECEBER_MATERIAL)
+          exame.setTarefaConcluida(this.tarefas.RECEBER_MATERIAL, this.state().usuarioAtual)
           exame.setTarefaAtiva(this.tarefas.CONFERIR_LACRE)
           exame.currentStep = this.step.VERIFICAR_MATERIAL_LACRADO
         }
@@ -324,9 +327,9 @@ export class MainPage implements OnInit, AfterViewChecked {
 
   materialRecebidoLacrado(value: boolean) {
     if (value) {
-      this.getExameAtual().currentStep = this.step.VERIFICAR_LACRE_CONFERE
+      this.state().exameAtual.currentStep = this.step.VERIFICAR_LACRE_CONFERE
     } else {
-      this.getExameAtual().currentStep = this.step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO
+      this.state().exameAtual.currentStep = this.step.VERIFICAR_MATERIAL_DEVE_SER_LACRADO
     }
   }
 
@@ -339,11 +342,11 @@ export class MainPage implements OnInit, AfterViewChecked {
   // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
   // REGISTRAR_QTDE_SIM_CARDS = 9,
   registrarLacreConfere(value: boolean) {
-    const exameAtual = this.getExameAtual()
-    this.listaExames.forEach((exame) => {
+    const exameAtual = this.state().exameAtual
+    this.state().listaExames.forEach((exame) => {
       if (exame.embalagem === exameAtual.embalagem) {
         if (value) {
-          exame.setTarefaConcluida(this.tarefas.CONFERIR_LACRE)
+          exame.setTarefaConcluida(this.tarefas.CONFERIR_LACRE, this.state().usuarioAtual)
           exame.setTarefaAtiva(this.tarefas.FOTOGRAFAR_NR_LACRE)
           exame.setTarefaAtiva(this.tarefas.FOTOGRAFAR_EMBALAGEM)
           exame.setTarefaAtiva(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL)
@@ -363,7 +366,7 @@ export class MainPage implements OnInit, AfterViewChecked {
   }
 
   registrarExcecaoLacre() {
-    this.getExameAtual().currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
   }
 
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
@@ -372,14 +375,14 @@ export class MainPage implements OnInit, AfterViewChecked {
   // REGISTRAR_QTDE_MEMORY_CARDS = 13,
   registrarQtdeSimCards(value: number) {
     if (value > 0) {
-      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_OPERADORA_SIM_CARD)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_SIM_CARD)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.EXTRACAO_SIM_CARD)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_OPERADORA_SIM_CARD)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.FOTOGRAFAR_SIM_CARD)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.EXTRACAO_SIM_CARD)
     }
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
-    this.getExameAtual().setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
-    this.getExameAtual().currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_SIM_CARDS, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
   }
 
   // FOTOGRAFAR_MEMORY_CARD = 14,
@@ -389,81 +392,84 @@ export class MainPage implements OnInit, AfterViewChecked {
   // REGISTRAR_APARELHO_RECEBIDO_LIGADO = 18,
   registrarQtdeMemoryCards(value: number) {
     if (value > 0) {
-      this.getExameAtual().setTarefaAtiva(this.tarefas.FOTOGRAFAR_MEMORY_CARD)
-      this.getExameAtual().setTarefaAtiva(this.tarefas.EXTRACAO_MEMORY_CARD)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.FOTOGRAFAR_MEMORY_CARD)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.EXTRACAO_MEMORY_CARD)
     }
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_ESTADO_CONSERVACAO)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
-    this.getExameAtual().currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_ESTADO_CONSERVACAO)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
   }
 
   // CARREGAR_BATERIA = 19,
   // LIGAR_APARELHO = 20,
   // REGISTRAR_FUNCIONAMENTO_TELA = 21,
   registrarAparelhoRecebidoLigado(value: boolean) {
-    this.getExameAtual().material.recebidoLigado = value
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.CARREGAR_BATERIA)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.LIGAR_APARELHO)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
-    this.getExameAtual().currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
+    this.state().exameAtual.material.recebidoLigado = value
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.CARREGAR_BATERIA)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.LIGAR_APARELHO)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_FUNCIONAMENTO_TELA
     this.mostrarBateria = true
   }
 
   // REGISTRAR_FABRICANTE_MODELO = 22,
   // REGISTRAR_APARELHO_BLOQUEADO = 23,
   registrarFuncionamentoTela(value: boolean) {
-    this.getExameAtual().material.telaFuncionando = TELA_STATUS.FUNCIONANDO
+    this.state().exameAtual.material.telaFuncionando = TELA_STATUS.FUNCIONANDO
     if (value) {
-      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
-      this.getExameAtual().currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
+      this.state().exameAtual.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
     } else {
-      this.getExameAtual().currentStep = this.step.VERIFICAR_EXTRACAO_OK
+      this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
     }
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
-    this.getExameAtual().setTarefaConcluida(this.tarefas.LIGAR_APARELHO)
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.LIGAR_APARELHO, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA, this.state().usuarioAtual)
   }
 
   // REGISTRAR_DETALHES_SENHA = 24,
   // REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO = 25,
   registrarTelefoneBloqueado(value: boolean) {
-    this.getExameAtual().material.bloqueado = value
+    this.state().exameAtual.material.bloqueado = value
     if (value) {
-      this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_DETALHES_SENHA)
-      this.getExameAtual().currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_DETALHES_SENHA)
+      this.state().exameAtual.currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
     } else {
-      this.getExameAtual().currentStep = this.step.VERIFICAR_MODO_AVIAO
+      this.state().exameAtual.currentStep = this.step.VERIFICAR_MODO_AVIAO
     }
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
-    this.getExameAtual().setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
   }
 
   registrarSenhaFornecida(value: boolean, senha: string) {
-    this.getExameAtual().material.senhaFornecida = value
-    this.getExameAtual().material.senha = senha
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA)
-    this.getExameAtual().currentStep = this.step.VERIFICAR_MODO_AVIAO
+    this.state().exameAtual.material.senhaFornecida = value
+    this.state().exameAtual.material.senha = senha
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA, this.state().usuarioAtual)
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_MODO_AVIAO
   }
 
   registrarModoAviao(value: boolean) {
-    this.getExameAtual().material.modoAviao = value
-    this.getExameAtual().setTarefaConcluida(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
+    this.state().exameAtual.material.modoAviao = value
+    this.state().exameAtual.setTarefaConcluida(
+      this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO,
+      this.state().usuarioAtual
+    )
     if (!value) {
-      this.getExameAtual().setTarefaAtiva(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO)
     }
-    this.getExameAtual().currentStep = this.step.VERIFICAR_EXTRACAO_OK
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
   }
 
   finalizar() {
     this.printExame()
-    this.getExameAtual().currentStep = this.step.TAREFAS_CONCLUIDAS
+    this.state().exameAtual.currentStep = this.step.TAREFAS_CONCLUIDAS
   }
 
   printExame() {
-    this.getExameAtual().imprimirJson()
+    this.state().exameAtual.imprimirJson()
   }
 
   getRange(): number[] {

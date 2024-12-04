@@ -5,12 +5,12 @@
 }"
 >
   <ion-toolbar color="primary">
-    <ion-title *ngIf="!materialAtual">Fluxo de Material</ion-title>
-    <ion-title *ngIf="materialAtual">
-      {{ getExameAtual().material.numero}}
-      <span class="small-text"> {{ getExameAtual().material.uf }} </span>
+    <ion-title *ngIf="!state().exameAtual">Fluxo de Material</ion-title>
+    <ion-title *ngIf="state().exameAtual">
+      {{ this.state().exameAtual.material.numero}}
+      <span class="small-text"> {{ this.state().exameAtual.material.uf }} </span>
     </ion-title>
-    <ion-buttons slot="end" *ngIf="materialAtual">
+    <ion-buttons slot="end" *ngIf="state().exameAtual">
       <ion-button (click)="addExame()">
         <ion-icon slot="icon-only" name="add-outline"></ion-icon>
       </ion-button>
@@ -32,10 +32,10 @@
     <ion-segment-button value="fluxo" (click)="alternarVisualizacaoFluxo()">
       <ion-label>Tarefas</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="dados" *ngIf="materialAtual" (click)="onChangeTab()">
+    <ion-segment-button value="dados" *ngIf="state().exameAtual" (click)="onChangeTab()">
       <ion-label>Dados</ion-label>
     </ion-segment-button>
-    <ion-segment-button value="fotos" *ngIf="materialAtual" (click)="onChangeTab()">
+    <ion-segment-button value="fotos" *ngIf="state().exameAtual" (click)="onChangeTab()">
       <ion-label>Fotos</ion-label>
     </ion-segment-button>
   </ion-segment>
@@ -50,24 +50,25 @@
   <ion-grid>
     <ion-row *ngIf="selectedTab==='materiais'">
       <ion-col size="12" size-sm="8" offset-sm="2" class="lista-materiais">
-        <ion-item
-          *ngFor="let exame of listaExames"
-          (click)="onChangeMaterialAtual(exame.material.numero, exame.material.uf)"
-        >
-          <app-etiqueta-material [exame]="exame" [isMaterialAtual]="isMaterialAtual(exame.material)" />
+        <ion-item *ngFor="let exame of state().listaExames" (click)="onChangeMaterialAtual(exame.material)">
+          <app-etiqueta-material
+            [usuario]="state().usuarioAtual"
+            [exame]="exame"
+            [isExameAtual]="isExameAtual(exame.material)"
+          />
         </ion-item>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='fluxo'">
       <ion-col size="12" size-sm="7" class="lista-fluxo">
-        <ion-item class="small-item" *ngIf="!materialAtual">
+        <ion-item class="small-item" *ngIf="!state().exameAtual">
           <ion-label>
             <ion-icon class="transparente" name="checkmark-outline" slot="icon-only"></ion-icon>
             Receber o material na secretaria do SETEC
           </ion-label>
         </ion-item>
-        <section *ngIf="materialAtual">
-          <ng-container *ngFor="let tarefa of getExameAtual().tarefas">
+        <section *ngIf="state().exameAtual">
+          <ng-container *ngFor="let tarefa of this.state().exameAtual.tarefas">
             <ion-item class="small-item" *ngIf="tarefa.ativa && (!tarefa.concluida || mostrarTarefasConcluidas)">
               <app-tarefa
                 [isSmallScreen]="isSmallScreen"
@@ -256,7 +257,7 @@
         </ion-card>
 
         <!-- Carregar bateria -->
-        <ion-card *ngIf="mostrarBateria && getExameAtual().material.bateria !== bateriaStatus.CARGA_COMPLETA">
+        <ion-card *ngIf="mostrarBateria && this.state().exameAtual.material.bateria !== bateriaStatus.CARGA_COMPLETA">
           <ion-card-content>
             <ion-card-subtitle> Bateria </ion-card-subtitle>
             <ion-item>
@@ -324,14 +325,14 @@
           <ion-card-content>
             <ion-toolbar>
               <ion-card-subtitle
-                ><div>{{ getExameAtual().material.numero }}</div>
-                <div class="senha-fornecida-usuario" *ngIf="getExameAtual().material.senha">
-                  Senha: {{getExameAtual().material.senha}}
+                ><div>{{ this.state().exameAtual.material.numero }}</div>
+                <div class="senha-fornecida-usuario" *ngIf="this.state().exameAtual.material.senha">
+                  Senha: {{this.state().exameAtual.material.senha}}
                 </div>
               </ion-card-subtitle>
             </ion-toolbar>
             <div class="foto-container">
-              <img [src]="'data:image/jpeg;base64,' + getExameAtual().material.fotos.detalhes[0]" />
+              <img [src]="'data:image/jpeg;base64,' + this.state().exameAtual.material.fotos.detalhes[0]" />
             </div>
           </ion-card-content>
         </ion-card>
@@ -485,23 +486,23 @@
       <ion-col size="12" size-sm="6" offset-sm="3" class="fotos">
         <app-galeria-fotos
           titulo="Fotos Embalagem"
-          [fotos]="getExameAtual().material.fotos.embalagem"
-          [mostrar]="getExameAtual().getTarefa(tarefas.FOTOGRAFAR_EMBALAGEM).ativa"
+          [fotos]="this.state().exameAtual.material.fotos.embalagem"
+          [mostrar]="this.state().exameAtual.getTarefa(tarefas.FOTOGRAFAR_EMBALAGEM).ativa"
           (tirarFoto)="onFotosEmbalagem($event)"
           (excluirFoto)="onFotosEmbalagem($event)"
         />
 
         <app-galeria-fotos
           titulo="Fotos Lacre"
-          [fotos]="getExameAtual().material.fotos.lacre"
-          [mostrar]="getExameAtual().getTarefa(tarefas.FOTOGRAFAR_NR_LACRE).ativa"
+          [fotos]="this.state().exameAtual.material.fotos.lacre"
+          [mostrar]="this.state().exameAtual.getTarefa(tarefas.FOTOGRAFAR_NR_LACRE).ativa"
           (tirarFoto)="onFotosLacre($event)"
           (excluirFoto)="onFotosLacre($event)"
         />
 
         <app-galeria-fotos
           titulo="Fotos Material Etiquetado"
-          [fotos]="getExameAtual().material.fotos.detalhes"
+          [fotos]="this.state().exameAtual.material.fotos.detalhes"
           [mostrar]="isFotosMaterialEtiquetadoVisible()"
           (tirarFoto)="onFotosMaterial($event)"
           (excluirFoto)="onFotosMaterial($event)"
@@ -509,7 +510,7 @@
 
         <app-galeria-fotos
           titulo="Fotos SIM Cards"
-          [fotos]="getExameAtual().material.fotos.simCards"
+          [fotos]="this.state().exameAtual.material.fotos.simCards"
           [mostrar]="isFotosSimCardsVisible()"
           (tirarFoto)="onFotosSimCards($event)"
           (excluirFoto)="onFotosSimCards($event)"
@@ -517,7 +518,7 @@
 
         <app-galeria-fotos
           titulo="Fotos Memory Card"
-          [fotos]="getExameAtual().material.fotos.memoryCard"
+          [fotos]="this.state().exameAtual.material.fotos.memoryCard"
           [mostrar]="isFotosMemoryCardVisible()"
           (tirarFoto)="onFotosMemoryCard($event)"
           (excluirFoto)="onFotosMemoryCard($event)"
