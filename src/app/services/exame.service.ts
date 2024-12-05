@@ -20,6 +20,60 @@ export class ExameService {
   get state$() {
     return this.state
   }
+
+  getListaPessoas() {
+    const listaPessoas: Usuario[] = [
+      {
+        codigo: "9780",
+        nome: "Weber",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Castro",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Clayton",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Daniel",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Leandro Barcelos",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Moreira",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Rafael",
+        perfil: "Perito",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "Eugênio",
+        perfil: "Estagiário",
+        uf: "GO",
+      },
+    ]
+    return listaPessoas
+  }
 }
 
 export type ExameState = {

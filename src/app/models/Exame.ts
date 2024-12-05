@@ -235,12 +235,14 @@ export class Exame {
   setTarefaConcluida(t: TAREFAS, usuario: Usuario) {
     const tarefa = this.getTarefa(t)
     tarefa.ativa = true
-    tarefa.concluida = true
-    tarefa.historico.push({
-      usuario,
-      objetoAnterior: JSON.stringify(tarefa),
-      data: new Date(),
-    })
+    if (!tarefa.concluida) {
+      tarefa.concluida = true
+      tarefa.historico.push({
+        usuario,
+        objetoAnterior: JSON.stringify(tarefa),
+        data: new Date(),
+      })
+    }
   }
 
   imprimirJson() {

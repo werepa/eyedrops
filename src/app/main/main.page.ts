@@ -57,6 +57,7 @@ if (environment.production) {
 export class MainPage implements OnInit, AfterViewChecked {
   private alertController = inject(AlertController)
   isSmallScreen = false
+  isModalPessoasOpen = false
   form: FormGroup = new FormGroup([])
   formSenha: FormGroup = new FormGroup([])
   step = STEP
@@ -68,16 +69,15 @@ export class MainPage implements OnInit, AfterViewChecked {
   mostrarBateria = false
   tabAtual = "fluxo"
   state: WritableSignal<ExameState>
+  listaPessoas: Usuario[] = this.exameService.getListaPessoas()
 
   constructor(
-    private authService: AuthService,
     private exameService: ExameService,
     private fb: FormBuilder,
     private breakpointObserver: BreakpointObserver,
     private cdr: ChangeDetectorRef
   ) {
     this.state = this.exameService.state
-    this.onChangeUsuarioAtual(this.authService.getUsuarioAtual())
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline })
   }
 
@@ -111,7 +111,7 @@ export class MainPage implements OnInit, AfterViewChecked {
     }
     materiaisArray?.setValue([{ numero: "", uf: this.state().usuarioAtual.uf }])
     this.selectedTab = "fluxo"
-    this.state.update((s) => (s.exameAtual = null))
+    this.state.update((s) => ({ ...s, exameAtual: null }))
     this.mostrarBateria = false
   }
 
@@ -198,6 +198,7 @@ export class MainPage implements OnInit, AfterViewChecked {
   }
 
   addMaterialControl() {
+    if (!this.state().usuarioAtual) return
     const materialArray = this.form.get("materiais") as FormArray
     const newMaterialGroup = this.fb.group({
       numero: ["", nrMaterialValidator],
@@ -476,6 +477,22 @@ export class MainPage implements OnInit, AfterViewChecked {
     // Divida por 2 para contar apenas os valores do enum
     const tarefasLength = Object.keys(this.tarefas).length / 2
     return Array.from({ length: tarefasLength }, (_, i) => i)
+  }
+
+  setModalPessoasOpen(isOpen: boolean) {
+    this.isModalPessoasOpen = isOpen
+  }
+
+  usuarioAtualModal() {
+    const usuarioAtual = this.state().usuarioAtual
+    return usuarioAtual ? usuarioAtual.nome : "Selecione o responsável"
+  }
+
+  setUsuarioAtual(usuario: Usuario) {
+    this.onChangeUsuarioAtual(usuario)
+    this.setModalPessoasOpen(false)
+    const materialArray = this.form.get("materiais") as FormArray
+    if (!materialArray.controls.length) this.addMaterialControl()
   }
 }
 
