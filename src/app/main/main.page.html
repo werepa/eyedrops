@@ -292,15 +292,20 @@
           </ion-card>
 
           <!-- Carregar bateria -->
-          <ion-card *ngIf="mostrarBateria && state().exameAtual.material.bateria !== bateriaStatus.CARGA_COMPLETA">
+          <ion-card *ngIf="mostrarBateria && +state().exameAtual.material.bateria !== bateriaStatus.CARGA_COMPLETA">
             <ion-card-content>
               <ion-card-subtitle> Bateria </ion-card-subtitle>
               <ion-item>
-                <ion-select label="Bateria" interface="popover">
-                  <ion-select-option value=""></ion-select-option>
-                  <ion-select-option value="0">Carregando</ion-select-option>
-                  <ion-select-option value="1">Carga completa</ion-select-option>
-                  <ion-select-option value="2">Defeito</ion-select-option>
+                <ion-select
+                  label="Bateria"
+                  interface="popover"
+                  [(ngModel)]="state().exameAtual.material.bateria"
+                  (ngModelChange)="registrarCarregarBateria()"
+                >
+                  <ion-select-option value="0"></ion-select-option>
+                  <ion-select-option value="1">Carregando</ion-select-option>
+                  <ion-select-option value="2">Carga completa</ion-select-option>
+                  <ion-select-option value="3">Defeito</ion-select-option>
                 </ion-select>
               </ion-item>
             </ion-card-content>
@@ -322,25 +327,27 @@
           <ion-card *ngIf="currentStep() === step.VERIFICAR_FORNECIMENTO_SENHA">
             <ion-card-content>
               <ion-card-subtitle> Detalhamento da Senha </ion-card-subtitle>
-              <form [formGroup]="formSenha">
-                <ion-item>
-                  <ion-select formControlName="senhaFornecidaUsuario" label="Senha fornecida?" interface="popover">
-                    <ion-select-option value="1">Sim</ion-select-option>
-                    <ion-select-option value="0">Não</ion-select-option>
-                  </ion-select>
-                </ion-item>
-                <ion-item *ngIf="formSenha.get('senhaFornecidaUsuario')?.value === '1'">
-                  <ion-input label="Senha" type="text" formControlName="senha"></ion-input>
-                </ion-item>
-                <ion-button
-                  expand="full"
-                  color="primary"
-                  (click)="registrarSenhaFornecida(formSenha.get('senhaFornecidaUsuario')?.value === '1', formSenha.get('senha')?.value)"
-                  [disabled]="!formSenha.valid"
+              <ion-item>
+                <ion-select
+                  label="Senha fornecida?"
+                  interface="popover"
+                  [(ngModel)]="state().exameAtual.material.senhaFornecida"
                 >
-                  Continuar
-                </ion-button>
-              </form>
+                  <ion-select-option value="1">Sim</ion-select-option>
+                  <ion-select-option value="0">Não</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <ion-item *ngIf="+state().exameAtual.material.senhaFornecida">
+                <ion-input label="Senha" type="text" [(ngModel)]="state().exameAtual.material.senha"></ion-input>
+              </ion-item>
+              <ion-button
+                expand="full"
+                color="primary"
+                (click)="registrarSenhaFornecida()"
+                [disabled]="!state().exameAtual.material.senha && +state().exameAtual.material.senhaFornecida"
+              >
+                Continuar
+              </ion-button>
             </ion-card-content>
           </ion-card>
 
@@ -404,7 +411,26 @@
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Aparelho bloqueado?" interface="popover" [(ngModel)]="state().exameAtual.material.bloqueado">
+          <ion-select
+            label="Recebido em modo avião?"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.recebidoModoAviao"
+          >
+            <ion-select-option value="1">Sim</ion-select-option>
+            <ion-select-option value="0">Não</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="!+state().exameAtual.material.recebidoModoAviao">
+          <ion-checkbox class="cinza" labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_modo_aviao"
+            >Habilitar modo avião</ion-checkbox
+          >
+        </ion-item>
+        <ion-item>
+          <ion-select
+            label="Aparelho bloqueado?"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.recebidoBloqueado"
+          >
             <ion-select-option value="1">Sim</ion-select-option>
             <ion-select-option value="0">Não</ion-select-option>
           </ion-select>
@@ -560,42 +586,55 @@
           <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.serial"></ion-input>
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 0">
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard1_extracted"
+          <ion-checkbox class="cinza" labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard1_extracted"
             >Extrair SIM CARD 1</ion-checkbox
           >
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 1">
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard2_extracted"
+          <ion-checkbox class="cinza" labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard2_extracted"
             >Extrair SIM CARD 2</ion-checkbox
           >
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 2">
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard3_extracted"
+          <ion-checkbox class="cinza" labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard3_extracted"
             >Extrair SIM CARD 3</ion-checkbox
           >
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_memorycard > 0">
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_memorycard1_extracted"
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_memorycard1_extracted"
             >Extrair Memory CARD 1</ion-checkbox
           >
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_memorycard > 1">
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_memorycard2_extracted"
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_memorycard2_extracted"
             >Extrair Memory CARD 2</ion-checkbox
           >
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_memorycard > 2">
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_memorycard3_extracted"
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_memorycard3_extracted"
             >Extrair Memory CARD 3</ion-checkbox
           >
         </ion-item>
         <ion-item>
-          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_device_data_extracted"
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_device_data_extracted"
             >Extrair Dados do aparelho examinado</ion-checkbox
           >
         </ion-item>
         <ion-item>
           <ion-select
+            class="cinza"
             label="WhatsApp Physical Analyzer"
             interface="popover"
             [(ngModel)]="state().exameAtual.material.whatsapp_physical_analyzer"

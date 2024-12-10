@@ -7,8 +7,8 @@ export class Material {
   private _recebidoLigado: boolean = false
   private _bateria: BATERIA_STATUS = BATERIA_STATUS.NAO_VERIFICADA
   private _telaFuncionando: TELA_STATUS = TELA_STATUS.NAO_VERIFICADA
-  private _modoAviao: boolean = false
-  private _bloqueado: boolean = false
+  private _recebidoModoAviao: boolean = false
+  private _recebidoBloqueado: boolean = false
   private _senhaFornecida: boolean = false
   private _senha: string = ""
   private _fotos: {
@@ -42,6 +42,7 @@ export class Material {
   private _imei1: string = ""
   private _imei2: string = ""
   private _serial: string = ""
+  private _is_modo_aviao: boolean = false
   private _is_simcard1_extracted: boolean = false
   private _is_simcard2_extracted: boolean = false
   private _is_simcard3_extracted: boolean = false
@@ -103,20 +104,20 @@ export class Material {
     this._telaFuncionando = status
   }
 
-  get modoAviao(): boolean {
-    return this._modoAviao
+  get recebidoModoAviao(): boolean {
+    return this._recebidoModoAviao
   }
 
-  set modoAviao(modo: boolean) {
-    this._modoAviao = modo
+  set recebidoModoAviao(modo: boolean) {
+    this._recebidoModoAviao = modo
   }
 
-  get bloqueado(): boolean {
-    return this._bloqueado
+  get recebidoBloqueado(): boolean {
+    return this._recebidoBloqueado
   }
 
-  set bloqueado(bloqueado: boolean) {
-    this._bloqueado = bloqueado
+  set recebidoBloqueado(bloqueado: boolean) {
+    this._recebidoBloqueado = bloqueado
   }
 
   get senhaFornecida(): boolean {
@@ -277,6 +278,14 @@ export class Material {
 
   set serial(serial: string) {
     this._serial = serial
+  }
+
+  get is_modo_aviao(): boolean {
+    return this._is_modo_aviao
+  }
+
+  set is_modo_aviao(modo: boolean) {
+    this._is_modo_aviao = modo
   }
 
   get is_simcard1_extracted(): boolean {

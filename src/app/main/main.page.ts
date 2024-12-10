@@ -59,7 +59,6 @@ export class MainPage implements OnInit {
   isSmallScreen = false
   isModalPessoasOpen = false
   form: FormGroup = new FormGroup([])
-  formSenha: FormGroup = new FormGroup([])
   step = STEP
   tarefas = TAREFAS
   telaStatus = TELA_STATUS
@@ -84,10 +83,6 @@ export class MainPage implements OnInit {
       materiais: this.fb.array([], [Validators.minLength(1)]),
       qtdeSimCards: [0, Validators.min(0)],
       qtdeMemoryCards: [0, Validators.min(0)],
-    })
-    this.formSenha = this.fb.group({
-      senhaFornecidaUsuario: ["", Validators.required],
-      senha: ["", SenhaValidator],
     })
     this.addMaterialControl()
   }
@@ -433,7 +428,7 @@ export class MainPage implements OnInit {
   // REGISTRAR_DETALHES_SENHA = 24,
   // REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO = 25,
   registrarTelefoneBloqueado(value: boolean) {
-    this.state().exameAtual.material.bloqueado = value
+    this.state().exameAtual.material.recebidoBloqueado = value
     if (value) {
       this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_DETALHES_SENHA)
       this.state().exameAtual.currentStep = this.step.VERIFICAR_FORNECIMENTO_SENHA
@@ -444,15 +439,13 @@ export class MainPage implements OnInit {
     this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO)
   }
 
-  registrarSenhaFornecida(value: boolean, senha: string) {
-    this.state().exameAtual.material.senhaFornecida = value
-    this.state().exameAtual.material.senha = senha
+  registrarSenhaFornecida() {
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_DETALHES_SENHA, this.state().usuarioAtual)
     this.state().exameAtual.currentStep = this.step.VERIFICAR_MODO_AVIAO
   }
 
   registrarModoAviao(value: boolean) {
-    this.state().exameAtual.material.modoAviao = value
+    this.state().exameAtual.material.recebidoModoAviao = value
     this.state().exameAtual.setTarefaConcluida(
       this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO,
       this.state().usuarioAtual
@@ -461,6 +454,10 @@ export class MainPage implements OnInit {
       this.state().exameAtual.setTarefaAtiva(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO)
     }
     this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+  }
+
+  registrarCarregarBateria() {
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.CARREGAR_BATERIA, this.state().usuarioAtual)
   }
 
   finalizar() {

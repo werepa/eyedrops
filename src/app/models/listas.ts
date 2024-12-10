@@ -73,6 +73,7 @@ export enum BATERIA_STATUS {
   NAO_VERIFICADA = 0,
   CARREGANDO = 1,
   CARGA_COMPLETA = 2,
+  DEFEITO = 3,
 }
 
 export type Log = {
