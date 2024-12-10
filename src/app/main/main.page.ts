@@ -54,7 +54,7 @@ if (environment.production) {
     EtiquetaMaterialComponent,
   ],
 })
-export class MainPage implements OnInit, AfterViewChecked {
+export class MainPage implements OnInit {
   private alertController = inject(AlertController)
   isSmallScreen = false
   isModalPessoasOpen = false
@@ -71,12 +71,7 @@ export class MainPage implements OnInit, AfterViewChecked {
   state: WritableSignal<ExameState>
   listaPessoas: Usuario[] = this.exameService.getListaPessoas()
 
-  constructor(
-    private exameService: ExameService,
-    private fb: FormBuilder,
-    private breakpointObserver: BreakpointObserver,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor(private exameService: ExameService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
     this.state = this.exameService.state
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline })
   }
@@ -95,10 +90,6 @@ export class MainPage implements OnInit, AfterViewChecked {
       senha: ["", SenhaValidator],
     })
     this.addMaterialControl()
-  }
-
-  ngAfterViewChecked() {
-    this.cdr.detectChanges()
   }
 
   // limpa o formulário e reinicia o fluxo de material e muda para a tab fluxo
@@ -384,6 +375,10 @@ export class MainPage implements OnInit, AfterViewChecked {
     this.state().exameAtual.setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_MEMORY_CARDS)
     this.state().exameAtual.currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
+
+    const exameAtual = this.state().exameAtual
+    exameAtual.material.qtde_simcard = value.toString()
+    this.state.update((s) => ({ ...s, exameAtual }))
   }
 
   // FOTOGRAFAR_MEMORY_CARD = 14,
@@ -401,6 +396,10 @@ export class MainPage implements OnInit, AfterViewChecked {
     this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_RECEBIDO_LIGADO)
     this.state().exameAtual.currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
+
+    const exameAtual = this.state().exameAtual
+    exameAtual.material.qtde_memorycard = value.toString()
+    this.state.update((s) => ({ ...s, exameAtual }))
   }
 
   // CARREGAR_BATERIA = 19,
@@ -493,6 +492,18 @@ export class MainPage implements OnInit, AfterViewChecked {
     this.setModalPessoasOpen(false)
     const materialArray = this.form.get("materiais") as FormArray
     if (!materialArray.controls.length) this.addMaterialControl()
+  }
+
+  onEstadoConservacaoChange(value: string) {
+    if (value === "Bom" || value === "Regular") {
+      const exameAtual = this.state().exameAtual
+      if (!exameAtual.material.aparencia_tela) exameAtual.material.aparencia_tela = "Vidro Ok"
+      if (!exameAtual.material.funcionamento_tela) exameAtual.material.funcionamento_tela = "Normal"
+      if (!exameAtual.material.funcionamento_botoes) exameAtual.material.funcionamento_botoes = "Normal"
+      if (!exameAtual.material.funcionamento_touch) exameAtual.material.funcionamento_touch = "Normal"
+      if (!exameAtual.material.funcionamento_conector_dados) exameAtual.material.funcionamento_conector_dados = "Normal"
+      this.state.update((s) => ({ ...s, exameAtual }))
+    }
   }
 }
 

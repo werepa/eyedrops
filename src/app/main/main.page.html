@@ -7,8 +7,8 @@
   <ion-toolbar color="primary">
     <ion-title *ngIf="!state().exameAtual">Fluxo de Material</ion-title>
     <ion-title *ngIf="state().exameAtual">
-      {{ this.state().exameAtual.material.numero}}
-      <span class="small-text"> {{ this.state().exameAtual.material.uf }} </span>
+      {{ state().exameAtual.material.numero}}
+      <span class="small-text"> {{ state().exameAtual.material.uf }} </span>
     </ion-title>
     <ion-buttons slot="end" *ngIf="state().exameAtual">
       <ion-button (click)="addExame()">
@@ -27,16 +27,16 @@
     [(ngModel)]="selectedTab"
   >
     <ion-segment-button value="materiais" *ngIf="getListaMateriais().length" (click)="onChangeTab()">
-      <ion-label>Materiais</ion-label>
+      <ion-label class="small-text">Materiais</ion-label>
     </ion-segment-button>
     <ion-segment-button value="fluxo" (click)="alternarVisualizacaoFluxo()">
-      <ion-label>Tarefas</ion-label>
+      <ion-label class="small-text">Tarefas</ion-label>
     </ion-segment-button>
     <ion-segment-button value="dados" *ngIf="state().exameAtual" (click)="onChangeTab()">
-      <ion-label>Dados</ion-label>
+      <ion-label class="small-text">Dados</ion-label>
     </ion-segment-button>
     <ion-segment-button value="fotos" *ngIf="state().exameAtual" (click)="onChangeTab()">
-      <ion-label>Fotos</ion-label>
+      <ion-label class="small-text">Fotos</ion-label>
     </ion-segment-button>
   </ion-segment>
 </ion-header>
@@ -68,7 +68,7 @@
           </ion-label>
         </ion-item>
         <section *ngIf="state().exameAtual">
-          <ng-container *ngFor="let tarefa of this.state().exameAtual.tarefas">
+          <ng-container *ngFor="let tarefa of state().exameAtual.tarefas">
             <ion-item class="small-item" *ngIf="tarefa.ativa && (!tarefa.concluida || mostrarTarefasConcluidas)">
               <app-tarefa
                 [isSmallScreen]="isSmallScreen"
@@ -292,7 +292,7 @@
           </ion-card>
 
           <!-- Carregar bateria -->
-          <ion-card *ngIf="mostrarBateria && this.state().exameAtual.material.bateria !== bateriaStatus.CARGA_COMPLETA">
+          <ion-card *ngIf="mostrarBateria && state().exameAtual.material.bateria !== bateriaStatus.CARGA_COMPLETA">
             <ion-card-content>
               <ion-card-subtitle> Bateria </ion-card-subtitle>
               <ion-item>
@@ -300,6 +300,7 @@
                   <ion-select-option value=""></ion-select-option>
                   <ion-select-option value="0">Carregando</ion-select-option>
                   <ion-select-option value="1">Carga completa</ion-select-option>
+                  <ion-select-option value="2">Defeito</ion-select-option>
                 </ion-select>
               </ion-item>
             </ion-card-content>
@@ -360,14 +361,14 @@
             <ion-card-content>
               <ion-toolbar>
                 <ion-card-subtitle
-                  ><div>{{ this.state().exameAtual.material.numero }}</div>
-                  <div class="senha-fornecida-usuario" *ngIf="this.state().exameAtual.material.senha">
-                    Senha: {{this.state().exameAtual.material.senha}}
+                  ><div>{{ state().exameAtual.material.numero }}</div>
+                  <div class="senha-fornecida-usuario" *ngIf="state().exameAtual.material.senha">
+                    Senha: {{state().exameAtual.material.senha}}
                   </div>
                 </ion-card-subtitle>
               </ion-toolbar>
               <div class="foto-container">
-                <img [src]="'data:image/jpeg;base64,' + this.state().exameAtual.material.fotos.detalhes[0]" />
+                <img [src]="'data:image/jpeg;base64,' + state().exameAtual.material.fotos.detalhes[0]" />
               </div>
             </ion-card-content>
           </ion-card>
@@ -375,33 +376,62 @@
       </ion-col>
     </ion-row>
     <ion-row *ngIf="selectedTab==='dados'">
-      <ion-col size="12" offset-sm="3" size-sm="6" class="dados">
+      <ion-col size="12" offset-lg="3" size-lg="6" offset-md="2" size-md="8" class="dados">
         <ion-item>
           <ion-label class="cinza" position="stacked">Descrição do aparelho</ion-label>
-          <ion-textarea class="azul"></ion-textarea>
+          <ion-textarea class="azul" [(ngModel)]="state().exameAtual.material.descricao"></ion-textarea>
         </ion-item>
         <ion-item>
-          <ion-select label="Estado de Conservação" interface="popover">
+          <ion-select
+            label="Estado de Conservação"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.estado_conservacao"
+            (ngModelChange)="onEstadoConservacaoChange($event)"
+          >
             <ion-select-option value="Bom">Bom</ion-select-option>
             <ion-select-option value="Regular">Regular</ion-select-option>
             <ion-select-option value="Ruim">Ruim</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Aparelho recebido ligado?" interface="popover">
+          <ion-select
+            label="Aparelho recebido ligado?"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.recebidoLigado"
+          >
             <ion-select-option value="1">Sim</ion-select-option>
             <ion-select-option value="0">Não</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Aparência da tela" interface="popover">
+          <ion-select label="Aparelho bloqueado?" interface="popover" [(ngModel)]="state().exameAtual.material.bloqueado">
+            <ion-select-option value="1">Sim</ion-select-option>
+            <ion-select-option value="0">Não</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Senha fornecida?" interface="popover" [(ngModel)]="state().exameAtual.material.senhaFornecida">
+            <ion-select-option value="1">Sim</ion-select-option>
+            <ion-select-option value="0">Não</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label class="cinza" position="fixed">Senha do aparelho</ion-label>
+          <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.senha"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-select label="Aparência da tela" interface="popover" [(ngModel)]="state().exameAtual.material.aparencia_tela">
             <ion-select-option value="Vidro Ok">Vidro Ok</ion-select-option>
             <ion-select-option value="Vidro trincado">Vidro trincado</ion-select-option>
             <ion-select-option value="Vidro quebrado">Vidro quebrado</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Funcionamento da tela" interface="popover">
+          <ion-select
+            label="Funcionamento da tela"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.funcionamento_tela"
+          >
             <ion-select-option value="Normal">Normal</ion-select-option>
             <ion-select-option value="Parcial">Parcial</ion-select-option>
             <ion-select-option value="Intermitente">Intermitente</ion-select-option>
@@ -409,14 +439,36 @@
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Funcionamento do touch" interface="popover">
+          <ion-select
+            label="Funcionamento dos botões"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.funcionamento_botoes"
+          >
+            <ion-select-option value="Normal">Normal</ion-select-option>
+            <ion-select-option value="Power - defeito">Power - defeito</ion-select-option>
+            <ion-select-option value="Home - defeito">Home - defeito</ion-select-option>
+            <ion-select-option value="Volume Up - defeito">Volume Up - defeito</ion-select-option>
+            <ion-select-option value="Volume Down - defeito">Volume Down - defeito</ion-select-option>
+            <ion-select-option value="Vários - defeito">Vários - defeito</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select
+            label="Funcionamento do touch"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.funcionamento_touch"
+          >
             <ion-select-option value="Normal">Normal</ion-select-option>
             <ion-select-option value="Parcial">Parcial</ion-select-option>
             <ion-select-option value="Não Funciona">Não Funciona</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Conector dados" interface="popover">
+          <ion-select
+            label="Conector dados"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.funcionamento_conector_dados"
+          >
             <ion-select-option value="Normal">Normal</ion-select-option>
             <ion-select-option value="Apenas carregamento">Apenas carregamento</ion-select-option>
             <ion-select-option value="Apenas dados">Apenas dados</ion-select-option>
@@ -425,10 +477,53 @@
         </ion-item>
         <ion-item>
           <ion-label class="cinza" position="stacked">Outros defeitos observados</ion-label>
-          <ion-input class="azul ion-text-right" type="text"></ion-input>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.outros_defeitos_observados"
+          ></ion-input>
         </ion-item>
         <ion-item>
-          <ion-select label="Qtde Sim Cards" interface="popover">
+          <ion-select label="Qtde Sim Cards" interface="popover" [(ngModel)]="state().exameAtual.material.qtde_simcard">
+            <ion-select-option value="0">0</ion-select-option>
+            <ion-select-option value="1">1</ion-select-option>
+            <ion-select-option value="2">2</ion-select-option>
+            <ion-select-option value="3">3</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 0">
+          <ion-select label="Sim Card 1" interface="popover" [(ngModel)]="state().exameAtual.material.simcard1_operadora">
+            <ion-select-option value="Claro">Claro</ion-select-option>
+            <ion-select-option value="Oi">Oi</ion-select-option>
+            <ion-select-option value="Tim">Tim</ion-select-option>
+            <ion-select-option value="Vivo">Vivo</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 1">
+          <ion-select label="Sim Card 2" interface="popover" [(ngModel)]="state().exameAtual.material.simcard2_operadora">
+            <ion-select-option value="Claro">Claro</ion-select-option>
+            <ion-select-option value="Oi">Oi</ion-select-option>
+            <ion-select-option value="Tim">Tim</ion-select-option>
+            <ion-select-option value="Vivo">Vivo</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 2">
+          <ion-select label="Sim Card 3" interface="popover" [(ngModel)]="state().exameAtual.material.simcard3_operadora">
+            <ion-select-option value="Claro">Claro</ion-select-option>
+            <ion-select-option value="Oi">Oi</ion-select-option>
+            <ion-select-option value="Tim">Tim</ion-select-option>
+            <ion-select-option value="Vivo">Vivo</ion-select-option>
+            <ion-select-option value="Outro">Outro</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-select
+            label="Qtde Memory Cards"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.qtde_memorycard"
+          >
             <ion-select-option value="0">0</ion-select-option>
             <ion-select-option value="1">1</ion-select-option>
             <ion-select-option value="2">2</ion-select-option>
@@ -436,42 +531,7 @@
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-select label="Sim Card 1" interface="popover">
-            <ion-select-option value="Claro">Claro</ion-select-option>
-            <ion-select-option value="Oi">Oi</ion-select-option>
-            <ion-select-option value="Tim">Tim</ion-select-option>
-            <ion-select-option value="Vivo">Vivo</ion-select-option>
-            <ion-select-option value="Outro">Outro</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-select label="Sim Card 2" interface="popover">
-            <ion-select-option value="Claro">Claro</ion-select-option>
-            <ion-select-option value="Oi">Oi</ion-select-option>
-            <ion-select-option value="Tim">Tim</ion-select-option>
-            <ion-select-option value="Vivo">Vivo</ion-select-option>
-            <ion-select-option value="Outro">Outro</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-select label="Sim Card 3" interface="popover">
-            <ion-select-option value="Claro">Claro</ion-select-option>
-            <ion-select-option value="Oi">Oi</ion-select-option>
-            <ion-select-option value="Tim">Tim</ion-select-option>
-            <ion-select-option value="Vivo">Vivo</ion-select-option>
-            <ion-select-option value="Outro">Outro</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-select label="Qtde Memory Cards" interface="popover">
-            <ion-select-option value="0">0</ion-select-option>
-            <ion-select-option value="1">1</ion-select-option>
-            <ion-select-option value="2">2</ion-select-option>
-            <ion-select-option value="3">3</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-select label="Fabricante">
+          <ion-select label="Fabricante" [(ngModel)]="state().exameAtual.material.fabricante">
             <ion-select-option value="Apple">Apple</ion-select-option>
             <ion-select-option value="Asus">Asus</ion-select-option>
             <ion-select-option value="LG">LG</ion-select-option>
@@ -485,34 +545,64 @@
         </ion-item>
         <ion-item>
           <ion-label class="cinza">Modelo</ion-label>
-          <ion-input class="azul ion-text-right" type="text"></ion-input>
+          <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.modelo"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair SIM CARD 1</ion-checkbox>
+          <ion-label class="cinza" position="fixed">IMEI 1</ion-label>
+          <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.imei1" />
         </ion-item>
         <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair SIM CARD 2</ion-checkbox>
+          <ion-label class="cinza" position="fixed">IMEI 2</ion-label>
+          <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.imei2"></ion-input>
         </ion-item>
         <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair SIM CARD 3</ion-checkbox>
+          <ion-label class="cinza" position="fixed">Nr. Serial</ion-label>
+          <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.serial"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 0">
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard1_extracted"
+            >Extrair SIM CARD 1</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 1">
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard2_extracted"
+            >Extrair SIM CARD 2</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 2">
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_simcard3_extracted"
+            >Extrair SIM CARD 3</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_memorycard > 0">
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_memorycard1_extracted"
+            >Extrair Memory CARD 1</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_memorycard > 1">
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_memorycard2_extracted"
+            >Extrair Memory CARD 2</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.qtde_memorycard > 2">
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_memorycard3_extracted"
+            >Extrair Memory CARD 3</ion-checkbox
+          >
         </ion-item>
         <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair Memory CARD 1</ion-checkbox>
+          <ion-checkbox labelPlacement="start" [(ngModel)]="state().exameAtual.material.is_device_data_extracted"
+            >Extrair Dados do aparelho examinado</ion-checkbox
+          >
         </ion-item>
         <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair Memory CARD 2</ion-checkbox>
-        </ion-item>
-        <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair Memory CARD 3</ion-checkbox>
-        </ion-item>
-        <ion-item>
-          <ion-checkbox labelPlacement="start">Extrair Dados do aparelho examinado</ion-checkbox>
-        </ion-item>
-        <ion-item>
-          <ion-checkbox labelPlacement="start">Abrir Extrações no Physical Analyzer</ion-checkbox>
-        </ion-item>
-        <ion-item>
-          <ion-checkbox labelPlacement="start">Verificar Chats</ion-checkbox>
+          <ion-select
+            label="WhatsApp Physical Analyzer"
+            interface="popover"
+            [(ngModel)]="state().exameAtual.material.whatsapp_physical_analyzer"
+          >
+            <ion-select-option value="1">Sim</ion-select-option>
+            <ion-select-option value="0">Não</ion-select-option>
+          </ion-select>
         </ion-item>
         <br />
         <br />
@@ -522,23 +612,23 @@
       <ion-col size="12" size-sm="6" offset-sm="3" class="fotos">
         <app-galeria-fotos
           titulo="Fotos Embalagem"
-          [fotos]="this.state().exameAtual.material.fotos.embalagem"
-          [mostrar]="this.state().exameAtual.getTarefa(tarefas.FOTOGRAFAR_EMBALAGEM).ativa"
+          [fotos]="state().exameAtual.material.fotos.embalagem"
+          [mostrar]="state().exameAtual.getTarefa(tarefas.FOTOGRAFAR_EMBALAGEM).ativa"
           (tirarFoto)="onFotosEmbalagem($event)"
           (excluirFoto)="onFotosEmbalagem($event)"
         />
 
         <app-galeria-fotos
           titulo="Fotos Lacre"
-          [fotos]="this.state().exameAtual.material.fotos.lacre"
-          [mostrar]="this.state().exameAtual.getTarefa(tarefas.FOTOGRAFAR_NR_LACRE).ativa"
+          [fotos]="state().exameAtual.material.fotos.lacre"
+          [mostrar]="state().exameAtual.getTarefa(tarefas.FOTOGRAFAR_NR_LACRE).ativa"
           (tirarFoto)="onFotosLacre($event)"
           (excluirFoto)="onFotosLacre($event)"
         />
 
         <app-galeria-fotos
           titulo="Fotos Material Etiquetado"
-          [fotos]="this.state().exameAtual.material.fotos.detalhes"
+          [fotos]="state().exameAtual.material.fotos.detalhes"
           [mostrar]="isFotosMaterialEtiquetadoVisible()"
           (tirarFoto)="onFotosMaterial($event)"
           (excluirFoto)="onFotosMaterial($event)"
@@ -546,7 +636,7 @@
 
         <app-galeria-fotos
           titulo="Fotos SIM Cards"
-          [fotos]="this.state().exameAtual.material.fotos.simCards"
+          [fotos]="state().exameAtual.material.fotos.simCards"
           [mostrar]="isFotosSimCardsVisible()"
           (tirarFoto)="onFotosSimCards($event)"
           (excluirFoto)="onFotosSimCards($event)"
@@ -554,7 +644,7 @@
 
         <app-galeria-fotos
           titulo="Fotos Memory Card"
-          [fotos]="this.state().exameAtual.material.fotos.memoryCard"
+          [fotos]="state().exameAtual.material.fotos.memoryCard"
           [mostrar]="isFotosMemoryCardVisible()"
           (tirarFoto)="onFotosMemoryCard($event)"
           (excluirFoto)="onFotosMemoryCard($event)"

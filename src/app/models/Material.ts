@@ -24,6 +24,32 @@ export class Material {
     simCards: [],
     memoryCard: [],
   }
+  private _descricao: string = ""
+  private _estado_conservacao: string = ""
+  private _aparencia_tela: string = ""
+  private _funcionamento_tela: string = ""
+  private _funcionamento_touch: string = ""
+  private _funcionamento_botoes: string = ""
+  private _funcionamento_conector_dados: string = ""
+  private _outros_defeitos_observados: string = ""
+  private _qtde_simcard: string = ""
+  private _simcard1_operadora: string = ""
+  private _simcard2_operadora: string = ""
+  private _simcard3_operadora: string = ""
+  private _qtde_memorycard: string = ""
+  private _fabricante: string = ""
+  private _modelo: string = ""
+  private _imei1: string = ""
+  private _imei2: string = ""
+  private _serial: string = ""
+  private _is_simcard1_extracted: boolean = false
+  private _is_simcard2_extracted: boolean = false
+  private _is_simcard3_extracted: boolean = false
+  private _is_memorycard1_extracted: boolean = false
+  private _is_memorycard2_extracted: boolean = false
+  private _is_memorycard3_extracted: boolean = false
+  private _is_device_data_extracted: boolean = false
+  private _whatsapp_physical_analyzer: string = ""
 
   constructor(numero: string = "", uf: string = "GO") {
     this.filterNumero(numero)
@@ -109,6 +135,215 @@ export class Material {
     this._senha = senha
   }
 
+  get descricao(): string {
+    return this._descricao
+  }
+
+  set descricao(descricao: string) {
+    this._descricao = descricao
+  }
+
+  get estado_conservacao(): string {
+    return this._estado_conservacao
+  }
+
+  set estado_conservacao(estado: string) {
+    this._estado_conservacao = estado
+  }
+
+  get aparencia_tela(): string {
+    return this._aparencia_tela
+  }
+
+  set aparencia_tela(aparencia: string) {
+    this._aparencia_tela = aparencia
+  }
+
+  get funcionamento_tela(): string {
+    return this._funcionamento_tela
+  }
+
+  set funcionamento_tela(funcionamento: string) {
+    this._funcionamento_tela = funcionamento
+  }
+
+  get funcionamento_touch(): string {
+    return this._funcionamento_touch
+  }
+
+  set funcionamento_touch(touch: string) {
+    this._funcionamento_touch = touch
+  }
+
+  get funcionamento_botoes(): string {
+    return this._funcionamento_botoes
+  }
+
+  set funcionamento_botoes(botoes: string) {
+    this._funcionamento_botoes = botoes
+  }
+
+  get funcionamento_conector_dados(): string {
+    return this._funcionamento_conector_dados
+  }
+
+  set funcionamento_conector_dados(conector: string) {
+    this._funcionamento_conector_dados = conector
+  }
+
+  get outros_defeitos_observados(): string {
+    return this._outros_defeitos_observados
+  }
+
+  set outros_defeitos_observados(defeitos: string) {
+    this._outros_defeitos_observados = defeitos
+  }
+
+  get qtde_simcard(): string {
+    return this._qtde_simcard
+  }
+
+  set qtde_simcard(qtde: string) {
+    this._qtde_simcard = qtde
+  }
+
+  get simcard1_operadora(): string {
+    return this._simcard1_operadora
+  }
+
+  set simcard1_operadora(operadora: string) {
+    this._simcard1_operadora = operadora
+  }
+
+  get simcard2_operadora(): string {
+    return this._simcard2_operadora
+  }
+
+  set simcard2_operadora(operadora: string) {
+    this._simcard2_operadora = operadora
+  }
+
+  get simcard3_operadora(): string {
+    return this._simcard3_operadora
+  }
+
+  set simcard3_operadora(operadora: string) {
+    this._simcard3_operadora = operadora
+  }
+
+  get qtde_memorycard(): string {
+    return this._qtde_memorycard
+  }
+
+  set qtde_memorycard(qtde: string) {
+    this._qtde_memorycard = qtde
+  }
+
+  get fabricante(): string {
+    return this._fabricante
+  }
+
+  set fabricante(fabricante: string) {
+    this._fabricante = fabricante
+  }
+
+  get modelo(): string {
+    return this._modelo
+  }
+
+  set modelo(modelo: string) {
+    this._modelo = modelo
+  }
+
+  get imei1(): string {
+    return this._imei1
+  }
+
+  set imei1(imei: string) {
+    this._imei1 = imei
+  }
+
+  get imei2(): string {
+    return this._imei2
+  }
+
+  set imei2(imei: string) {
+    this._imei2 = imei
+  }
+
+  get serial(): string {
+    return this._serial
+  }
+
+  set serial(serial: string) {
+    this._serial = serial
+  }
+
+  get is_simcard1_extracted(): boolean {
+    return this._is_simcard1_extracted
+  }
+
+  set is_simcard1_extracted(extracted: boolean) {
+    this._is_simcard1_extracted = extracted
+  }
+
+  get is_simcard2_extracted(): boolean {
+    return this._is_simcard2_extracted
+  }
+
+  set is_simcard2_extracted(extracted: boolean) {
+    this._is_simcard2_extracted = extracted
+  }
+
+  get is_simcard3_extracted(): boolean {
+    return this._is_simcard3_extracted
+  }
+
+  set is_simcard3_extracted(extracted: boolean) {
+    this._is_simcard3_extracted = extracted
+  }
+
+  get is_memorycard1_extracted(): boolean {
+    return this._is_memorycard1_extracted
+  }
+
+  set is_memorycard1_extracted(extracted: boolean) {
+    this._is_memorycard1_extracted = extracted
+  }
+
+  get is_memorycard2_extracted(): boolean {
+    return this._is_memorycard2_extracted
+  }
+
+  set is_memorycard2_extracted(extracted: boolean) {
+    this._is_memorycard2_extracted = extracted
+  }
+
+  get is_memorycard3_extracted(): boolean {
+    return this._is_memorycard3_extracted
+  }
+
+  set is_memorycard3_extracted(extracted: boolean) {
+    this._is_memorycard3_extracted = extracted
+  }
+
+  get is_device_data_extracted(): boolean {
+    return this._is_device_data_extracted
+  }
+
+  set is_device_data_extracted(extracted: boolean) {
+    this._is_device_data_extracted = extracted
+  }
+
+  get whatsapp_physical_analyzer(): string {
+    return this._whatsapp_physical_analyzer
+  }
+
+  set whatsapp_physical_analyzer(whatsapp: string) {
+    this._whatsapp_physical_analyzer = whatsapp
+  }
+
+  // Verifica se dois materiais são iguais
   public equal(material: Material): boolean {
     return this._numero === this.formatNumber(material.numero) && this._uf === material.uf.toUpperCase()
   }
