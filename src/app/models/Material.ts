@@ -25,6 +25,7 @@ export class Material {
     memoryCard: [],
   }
   private _descricao: string = ""
+  private _codigoEpol: string = ""
   private _estado_conservacao: string = ""
   private _aparencia_tela: string = ""
   private _funcionamento_tela: string = ""
@@ -138,6 +139,14 @@ export class Material {
 
   get descricao(): string {
     return this._descricao
+  }
+
+  get codigoEpol(): string {
+    return this._codigoEpol
+  }
+
+  set codigoEpol(codigo: string) {
+    this._codigoEpol = codigo
   }
 
   set descricao(descricao: string) {

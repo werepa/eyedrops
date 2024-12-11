@@ -356,6 +356,12 @@ export class MainPage implements OnInit {
     this.state().exameAtual.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
   }
 
+  // REGISTRAR_ATUALIZACAO_CADASTRO = 4,
+  registrarAtualizarCadastroMaterial() {
+    if (!this.state().exameAtual.material.descricao.trim()) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL, this.state().usuarioAtual)
+  }
+
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
   // FOTOGRAFAR_SIM_CARD = 11,
   // EXTRACAO_SIM_CARD = 12,
@@ -456,8 +462,67 @@ export class MainPage implements OnInit {
     this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
   }
 
+  registrarColocarAparelhoModoAviao() {
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO, this.state().usuarioAtual)
+  }
+
   registrarCarregarBateria() {
     this.state().exameAtual.setTarefaConcluida(this.tarefas.CARREGAR_BATERIA, this.state().usuarioAtual)
+  }
+
+  registrarFabricanteModelo() {
+    if (!this.state().exameAtual.material.fabricante.trim() || !this.state().exameAtual.material.modelo.trim()) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_FABRICANTE_MODELO, this.state().usuarioAtual)
+  }
+
+  registrarEstadoConservacao() {
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_ESTADO_CONSERVACAO, this.state().usuarioAtual)
+  }
+
+  registrarDefeitosObservados() {
+    if (
+      !this.state().exameAtual.material.aparencia_tela ||
+      !this.state().exameAtual.material.funcionamento_tela ||
+      !this.state().exameAtual.material.funcionamento_botoes ||
+      !this.state().exameAtual.material.funcionamento_touch ||
+      !this.state().exameAtual.material.funcionamento_conector_dados ||
+      (this.state().exameAtual.material.estado_conservacao !== "Bom" &&
+        this.state().exameAtual.material.outros_defeitos_observados.trim() === "")
+    )
+      return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_DEFEITOS_OBSERVADOS, this.state().usuarioAtual)
+  }
+
+  registrarOperadoraSimCard() {
+    if (+this.state().exameAtual.material.qtde_simcard > 0 && !this.state().exameAtual.material.simcard1_operadora.trim())
+      return
+    if (+this.state().exameAtual.material.qtde_simcard > 1 && !this.state().exameAtual.material.simcard2_operadora.trim())
+      return
+    if (+this.state().exameAtual.material.qtde_simcard > 2 && !this.state().exameAtual.material.simcard3_operadora.trim())
+      return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_OPERADORA_SIM_CARD, this.state().usuarioAtual)
+  }
+
+  registrarExtracaoSimCard() {
+    if (+this.state().exameAtual.material.qtde_simcard > 0 && !this.state().exameAtual.material.is_simcard1_extracted) return
+    if (+this.state().exameAtual.material.qtde_simcard > 1 && !this.state().exameAtual.material.is_simcard2_extracted) return
+    if (+this.state().exameAtual.material.qtde_simcard > 2 && !this.state().exameAtual.material.is_simcard3_extracted) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.EXTRACAO_SIM_CARD, this.state().usuarioAtual)
+  }
+
+  registrarExtracaoMemoryCard() {
+    if (+this.state().exameAtual.material.qtde_memorycard > 0 && !this.state().exameAtual.material.is_memorycard1_extracted)
+      return
+    if (+this.state().exameAtual.material.qtde_memorycard > 1 && !this.state().exameAtual.material.is_memorycard2_extracted)
+      return
+    if (+this.state().exameAtual.material.qtde_memorycard > 2 && !this.state().exameAtual.material.is_memorycard3_extracted)
+      return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.EXTRACAO_MEMORY_CARD, this.state().usuarioAtual)
+  }
+
+  registrarCodigoEpol() {
+    if (!this.state().exameAtual.material.codigoEpol.trim()) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_CODIGO_EPOL, this.state().usuarioAtual)
   }
 
   finalizar() {
@@ -501,6 +566,43 @@ export class MainPage implements OnInit {
       if (!exameAtual.material.funcionamento_conector_dados) exameAtual.material.funcionamento_conector_dados = "Normal"
       this.state.update((s) => ({ ...s, exameAtual }))
     }
+    this.registrarEstadoConservacao()
+    this.registrarDefeitosObservados()
+  }
+
+  onAparenciaTelaChange() {
+    if (this.state().exameAtual.material.aparencia_tela !== "Vidro Ok") {
+      this.state().exameAtual.material.estado_conservacao = "Ruim"
+    }
+    this.registrarEstadoConservacao()
+  }
+
+  onFuncionamentoTelaChange() {
+    if (this.state().exameAtual.material.funcionamento_tela !== "Normal") {
+      this.state().exameAtual.material.estado_conservacao = "Ruim"
+    }
+    this.registrarEstadoConservacao()
+  }
+
+  onFuncionamentoBotoesChange() {
+    if (this.state().exameAtual.material.funcionamento_botoes !== "Normal") {
+      this.state().exameAtual.material.estado_conservacao = "Ruim"
+    }
+    this.registrarEstadoConservacao()
+  }
+
+  onFuncionamentoTouchChange() {
+    if (this.state().exameAtual.material.funcionamento_touch !== "Normal") {
+      this.state().exameAtual.material.estado_conservacao = "Ruim"
+    }
+    this.registrarEstadoConservacao()
+  }
+
+  onFuncionamentoConectorDadosChange() {
+    if (this.state().exameAtual.material.funcionamento_conector_dados !== "Normal") {
+      this.state().exameAtual.material.estado_conservacao = "Ruim"
+    }
+    this.registrarEstadoConservacao()
   }
 }
 

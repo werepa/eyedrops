@@ -36,6 +36,7 @@ describe("MainPage", () => {
   function populateMaterialFields() {
     component.addMaterialControl()
     component.addMaterialControl()
+    component.addMaterialControl()
     const materialControls = component.getMateriaisControls()
     materialControls[0].get("numero")?.setValue("0123/2024")
     materialControls[0].get("uf")?.setValue("GO")
@@ -81,6 +82,7 @@ describe("MainPage", () => {
   })
 
   it("should add a new material form control when calling addNrMaterial", () => {
+    component.ngOnInit()
     let nrMateriais = component.getMateriaisControls()
     expect(nrMateriais.length).toBe(1)
     component.addMaterialControl()
@@ -158,6 +160,7 @@ describe("MainPage", () => {
   })
 
   it("should return an array of AbstractControl when calling getNrMateriaisControls", () => {
+    component.addMaterialControl()
     const nrMateriaisControls = component.getMateriaisControls()
     expect(nrMateriaisControls).toBeDefined()
     expect(nrMateriaisControls.length).toBe(1)
@@ -269,15 +272,15 @@ describe("MainPage", () => {
     populateMaterialFields()
     component.registrarTelefoneBloqueado(true)
     expect(component.currentStep()).toBe(STEP.VERIFICAR_FORNECIMENTO_SENHA)
-    component.registrarSenhaFornecida(true, "senha")
+    component.registrarSenhaFornecida()
     expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
-    component.registrarSenhaFornecida(false, "")
+    component.registrarSenhaFornecida()
     expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
   })
 
   it("should update currentStep after VERIFICAR_MODO_AVIAO", () => {
     populateMaterialFields()
-    component.registrarSenhaFornecida(true, "senha")
+    component.registrarSenhaFornecida()
     expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
     component.registrarModoAviao(true)
     expect(component.currentStep()).toBe(STEP.VERIFICAR_EXTRACAO_OK)
@@ -601,12 +604,12 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DETALHES_SENHA).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).concluida).toBe(false)
-    component.registrarSenhaFornecida(true, "senha")
+    component.registrarSenhaFornecida()
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DETALHES_SENHA).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DETALHES_SENHA).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).concluida).toBe(false)
-    component.registrarSenhaFornecida(false, "")
+    component.registrarSenhaFornecida()
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DETALHES_SENHA).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DETALHES_SENHA).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).ativa).toBe(true)
@@ -623,7 +626,7 @@ describe("MainPage", () => {
     component.registrarAparelhoRecebidoLigado(true)
     component.registrarFuncionamentoTela(true)
     component.registrarTelefoneBloqueado(true)
-    component.registrarSenhaFornecida(false, "")
+    component.registrarSenhaFornecida()
     const exameAtual = component.state().exameAtual
     expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.RECEBER_MATERIAL).concluida).toBe(true)
@@ -673,5 +676,200 @@ describe("MainPage", () => {
     component.registrarModoAviao(false)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(true)
+  })
+
+  it("should update tarefas after COLOCAR_APARELHO_MODO_AVIAO", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarModoAviao(false)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).concluida).toBe(false)
+    component.registrarColocarAparelhoModoAviao()
+    expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).concluida).toBe(true)
+  })
+
+  it("should update tarefas after ATUALIZAR_CADASTRO_MATERIAL", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).concluida).toBe(false)
+    component.registrarAtualizarCadastroMaterial()
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).concluida).toBe(false)
+    component.state().exameAtual.material.descricao = "(alterada)"
+    component.registrarAtualizarCadastroMaterial()
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.ATUALIZAR_CADASTRO_MATERIAL).concluida).toBe(true)
+  })
+
+  it("should update tarefas after REGISTRAR_FABRICANTE_MODELO", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    component.registrarQtdeMemoryCards(0)
+    component.registrarAparelhoRecebidoLigado(true)
+    component.registrarFuncionamentoTela(true)
+    component.registrarTelefoneBloqueado(true)
+    component.registrarSenhaFornecida()
+    component.registrarModoAviao(true)
+    component.registrarColocarAparelhoModoAviao()
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_FABRICANTE_MODELO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_FABRICANTE_MODELO).concluida).toBe(false)
+    component.registrarFabricanteModelo()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_FABRICANTE_MODELO).concluida).toBe(false)
+    component.state().exameAtual.material.fabricante = "(alterado)"
+    component.state().exameAtual.material.modelo = "(alterado)"
+    component.registrarFabricanteModelo()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_FABRICANTE_MODELO).concluida).toBe(true)
+  })
+
+  it("should update tarefas after REGISTRAR_ESTADO_CONSERVACAO", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    component.registrarQtdeMemoryCards(0)
+    component.registrarAparelhoRecebidoLigado(true)
+    component.registrarFuncionamentoTela(true)
+    component.registrarTelefoneBloqueado(true)
+    component.registrarSenhaFornecida()
+    component.registrarModoAviao(true)
+    component.registrarColocarAparelhoModoAviao()
+    component.registrarFabricanteModelo()
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ESTADO_CONSERVACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ESTADO_CONSERVACAO).concluida).toBe(false)
+    component.registrarEstadoConservacao()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ESTADO_CONSERVACAO).concluida).toBe(true)
+  })
+
+  it("should update tarefas after REGISTRAR_DEFEITOS_OBSERVADOS conservação boa", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    component.registrarQtdeMemoryCards(0)
+    component.registrarAparelhoRecebidoLigado(true)
+    component.registrarFuncionamentoTela(true)
+    component.registrarTelefoneBloqueado(true)
+    component.registrarSenhaFornecida()
+    component.registrarModoAviao(true)
+    component.registrarColocarAparelhoModoAviao()
+    component.registrarFabricanteModelo()
+    component.registrarEstadoConservacao()
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(false)
+    component.registrarDefeitosObservados()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(false)
+    component.state().exameAtual.material.estado_conservacao = "Bom"
+    component.state().exameAtual.material.aparencia_tela = "Vidro Ok"
+    component.state().exameAtual.material.funcionamento_tela = "Normal"
+    component.state().exameAtual.material.funcionamento_botoes = "Normal"
+    component.state().exameAtual.material.funcionamento_touch = "Normal"
+    component.state().exameAtual.material.funcionamento_conector_dados = "Normal"
+    component.registrarDefeitosObservados()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(true)
+  })
+
+  it("should update tarefas after REGISTRAR_DEFEITOS_OBSERVADOS conservação regular ou ruim", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    component.registrarQtdeMemoryCards(0)
+    component.registrarAparelhoRecebidoLigado(true)
+    component.registrarFuncionamentoTela(true)
+    component.registrarTelefoneBloqueado(true)
+    component.registrarSenhaFornecida()
+    component.registrarModoAviao(true)
+    component.registrarColocarAparelhoModoAviao()
+    component.registrarFabricanteModelo()
+    component.registrarEstadoConservacao()
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(false)
+    component.registrarDefeitosObservados()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(false)
+    component.state().exameAtual.material.estado_conservacao = "Regular"
+    component.state().exameAtual.material.aparencia_tela = "Vidro Ok"
+    component.state().exameAtual.material.funcionamento_tela = "Normal"
+    component.state().exameAtual.material.funcionamento_botoes = "Normal"
+    component.state().exameAtual.material.funcionamento_touch = "Normal"
+    component.state().exameAtual.material.funcionamento_conector_dados = "Normal"
+    component.registrarDefeitosObservados()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(false)
+    component.state().exameAtual.material.outros_defeitos_observados = "Outros defeitos"
+    component.registrarDefeitosObservados()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DEFEITOS_OBSERVADOS).concluida).toBe(true)
+  })
+
+  it("should update tarefas after REGISTRAR_OPERADORA_SIM_CARD", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).concluida).toBe(false)
+    component.state().exameAtual.material.simcard1_operadora = "Vivo"
+    component.registrarOperadoraSimCard()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).concluida).toBe(false)
+    component.state().exameAtual.material.simcard2_operadora = "Claro"
+    component.registrarOperadoraSimCard()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).concluida).toBe(true)
+  })
+
+  it("should update tarefas after EXTRACAO_SIM_CARD", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(2)
+    component.registrarOperadoraSimCard()
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).concluida).toBe(false)
+    component.registrarExtracaoSimCard()
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).concluida).toBe(false)
+    component.state().exameAtual.material.is_simcard1_extracted = true
+    component.state().exameAtual.material.is_simcard2_extracted = true
+    component.registrarExtracaoSimCard()
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_SIM_CARD).concluida).toBe(true)
+  })
+
+  it("should update tarefas after EXTRACAO_MEMORY_CARD", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeMemoryCards(2)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).concluida).toBe(false)
+    component.registrarExtracaoMemoryCard()
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).concluida).toBe(false)
+    component.state().exameAtual.material.is_memorycard1_extracted = true
+    component.state().exameAtual.material.is_memorycard2_extracted = true
+    component.registrarExtracaoMemoryCard()
+    expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).concluida).toBe(true)
+  })
+
+  it("should update tarefas after REGISTRAR_CODIGO_EPOL", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
+    component.registrarCodigoEpol()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
+    component.state().exameAtual.material.codigoEpol = "123456"
+    component.registrarCodigoEpol()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(true)
   })
 })

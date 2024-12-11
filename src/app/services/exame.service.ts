@@ -24,12 +24,6 @@ export class ExameService {
   getListaPessoas() {
     const listaPessoas: Usuario[] = [
       {
-        codigo: "9780",
-        nome: "Weber",
-        perfil: "Perito",
-        uf: "GO",
-      },
-      {
         codigo: "0000",
         nome: "Castro",
         perfil: "Perito",
@@ -68,6 +62,12 @@ export class ExameService {
       {
         codigo: "0000",
         nome: "Eugênio",
+        perfil: "Estagiário",
+        uf: "GO",
+      },
+      {
+        codigo: "0000",
+        nome: "João Pedro",
         perfil: "Estagiário",
         uf: "GO",
       },
