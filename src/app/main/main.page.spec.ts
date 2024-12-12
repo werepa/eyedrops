@@ -320,6 +320,7 @@ describe("MainPage", () => {
   // ETIQUETAR_MATERIAL = 7,
   // FOTOGRAFAR_MATERIAL_ETIQUETADO = 8,
   // REGISTRAR_QTDE_SIM_CARDS = 9,
+  // REGISTRAR_FABRICANTE_MODELO = 22,
   it("should update tarefas after VERIFICAR_LACRE_CONFERE", () => {
     populateExameInicial()
     component.receberMaterial()
@@ -346,6 +347,7 @@ describe("MainPage", () => {
         expect(exame.getTarefa(TAREFAS.FOTOGRAFAR_MATERIAL_ETIQUETADO).concluida).toBe(false)
         expect(exame.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).ativa).toBe(true)
         expect(exame.getTarefa(TAREFAS.REGISTRAR_QTDE_SIM_CARDS).concluida).toBe(false)
+        expect(exame.getTarefa(TAREFAS.REGISTRAR_FABRICANTE_MODELO).ativa).toBe(true)
       }
     })
     expect(component.state().listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
@@ -871,5 +873,33 @@ describe("MainPage", () => {
     component.state().exameAtual.material.codigoEpol = "123456"
     component.registrarCodigoEpol()
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(true)
+  })
+
+  it("should extract IMEI from descricao do aparelho", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.descricao =
+      "Samsung Galaxy A10 32GB, IMEI1 123456789012345 e imei 2: 1234/56.7890123-46"
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.imei1).toBe("123456789012345")
+    expect(component.state().exameAtual.material.imei2).toBe("123456789012346")
+  })
+
+  it("should extract serial number from descricao do aparelho", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, S/N 1234/56.7890123-46"
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.serial).toBe("123456789012346")
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, Serial: 1234/56.7890123-46"
+    component.state().exameAtual.material.serial = ""
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.serial).toBe("123456789012346")
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, número de serie 1234/56.7890123-46"
+    component.state().exameAtual.material.serial = ""
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.serial).toBe("123456789012346")
   })
 })

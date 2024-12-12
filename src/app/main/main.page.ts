@@ -342,6 +342,7 @@ export class MainPage implements OnInit {
           exame.setTarefaAtiva(this.tarefas.ETIQUETAR_MATERIAL)
           exame.setTarefaAtiva(this.tarefas.FOTOGRAFAR_MATERIAL_ETIQUETADO)
           exame.setTarefaAtiva(this.tarefas.REGISTRAR_QTDE_SIM_CARDS)
+          exame.setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
           exame.currentStep = this.step.VERIFICAR_QTDE_SIM_CARDS
         } else {
           exame.reset()
@@ -358,8 +359,38 @@ export class MainPage implements OnInit {
 
   // REGISTRAR_ATUALIZACAO_CADASTRO = 4,
   registrarAtualizarCadastroMaterial() {
-    if (!this.state().exameAtual.material.descricao.trim()) return
+    const descricao = this.state().exameAtual.material.descricao.trim()
+    if (!descricao) return
     this.state().exameAtual.setTarefaConcluida(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL, this.state().usuarioAtual)
+
+    const imeiPattern = /imei\s*\d{0,1}[:]*\s*([\d\.\-\/]*)/gim
+    let matches = descricao.match(imeiPattern)
+
+    let imei1 = ""
+    let imei2 = ""
+
+    if (matches) {
+      matches.forEach((match) => {
+        const lista = match.split(" ")
+        const imei = lista[lista.length - 1].replace(/\D/g, "")
+        if (!imei1) {
+          imei1 = imei
+        } else if (!imei2) {
+          imei2 = imei
+        }
+      })
+      this.state().exameAtual.material.imei1 = imei1
+      this.state().exameAtual.material.imei2 = imei2
+    }
+
+    const serialPattern = /(?:serial|sn|s\/n|n[úu]mero (?:de )*s[ée]rie)(?:[:=\s])*([\d\.\-\/]*)/gim
+    matches = descricao.match(serialPattern)
+
+    if (matches) {
+      const lista = matches[0].split(" ")
+      const serial = lista[lista.length - 1].replace(/\D/g, "")
+      this.state().exameAtual.material.serial = serial
+    }
   }
 
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
@@ -426,7 +457,6 @@ export class MainPage implements OnInit {
     } else {
       this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
     }
-    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_FABRICANTE_MODELO)
     this.state().exameAtual.setTarefaConcluida(this.tarefas.LIGAR_APARELHO, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA, this.state().usuarioAtual)
   }

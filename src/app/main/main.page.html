@@ -623,9 +623,14 @@
             <ion-select-option value="Outro">Outro</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item [(ngModel)]="state().exameAtual.material.modelo" (ngModelChange)="registrarFabricanteModelo()">
+        <ion-item>
           <ion-label class="cinza">Modelo</ion-label>
-          <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.modelo"></ion-input>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.modelo"
+            (ngModelChange)="registrarFabricanteModelo()"
+          ></ion-input>
         </ion-item>
         <ion-item>
           <ion-label class="cinza" position="fixed">IMEI 1</ion-label>
