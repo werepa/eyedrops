@@ -1,5 +1,7 @@
 :host{
   width:100%;
+  border: 1px solid lightgray;
+  margin-bottom: 10px;
 }
 
 .cinza {
@@ -12,4 +14,21 @@
 
 .small-text {
   font-size: 12px!important;
+}
+
+.step {
+  padding: 5px;
+  color: gray !important;
+  font-size: 14px !important;
+  margin: 5px 0;
+}
+
+.fundo-verde {
+  background-color: #ecfbec;
+  border: 1px solid green;
+
+  .step {
+    background-color: #459551;
+    color: #ffffff !important;
   }
+}

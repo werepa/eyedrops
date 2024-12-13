@@ -50,12 +50,8 @@
   <ion-grid>
     <ion-row *ngIf="selectedTab==='materiais'">
       <ion-col size="12" size-sm="8" offset-sm="2" class="lista-materiais">
-        <ion-item *ngFor="let exame of state().listaExames" (click)="onChangeMaterialAtual(exame.material)">
-          <app-etiqueta-material
-            [usuario]="state().usuarioAtual"
-            [exame]="exame"
-            [isExameAtual]="isExameAtual(exame.material)"
-          />
+        <ion-item lines="none" *ngFor="let exame of state().listaExames" (click)="onChangeMaterialAtual(exame.material)">
+          <app-etiqueta-material [exame]="exame" [isExameAtual]="isExameAtual(exame.material)" />
         </ion-item>
       </ion-col>
     </ion-row>
@@ -566,6 +562,17 @@
             <ion-select-option value="Outro">Outro</ion-select-option>
           </ion-select>
         </ion-item>
+        <ion-item
+          *ngIf="+state().exameAtual.material.qtde_simcard > 0 && state().exameAtual.material.is_physical_analyzer_opening"
+        >
+          <ion-label class="cinza" position="fixed">Nr. telefone - Sim1</ion-label>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.simcard1_numero"
+            (ngModelChange)="registrarSimCardNumber()"
+          ></ion-input>
+        </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 1">
           <ion-select
             label="Sim Card 2"
@@ -579,6 +586,17 @@
             <ion-select-option value="Vivo">Vivo</ion-select-option>
             <ion-select-option value="Outro">Outro</ion-select-option>
           </ion-select>
+        </ion-item>
+        <ion-item
+          *ngIf="+state().exameAtual.material.qtde_simcard > 1 && state().exameAtual.material.is_physical_analyzer_opening"
+        >
+          <ion-label class="cinza" position="fixed">Nr. telefone - Sim2</ion-label>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.simcard2_numero"
+            (ngModelChange)="registrarSimCardNumber()"
+          ></ion-input>
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 2">
           <ion-select
@@ -594,6 +612,18 @@
             <ion-select-option value="Outro">Outro</ion-select-option>
           </ion-select>
         </ion-item>
+        <ion-item
+          *ngIf="+state().exameAtual.material.qtde_simcard > 2 && state().exameAtual.material.is_physical_analyzer_opening"
+        >
+          <ion-label class="cinza" position="fixed">Nr. telefone - Sim3</ion-label>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.simcard3_numero"
+            (ngModelChange)="registrarSimCardNumber()"
+          ></ion-input>
+        </ion-item>
+
         <ion-item>
           <ion-select
             label="Qtde Memory Cards"
@@ -702,11 +732,39 @@
           <ion-checkbox
             class="cinza"
             labelPlacement="start"
-            [(ngModel)]="state().exameAtual.material.is_device_data_extracted"
-            >Extrair Dados do aparelho examinado</ion-checkbox
+            [(ngModel)]="state().exameAtual.material.is_inseyets_extracting"
+            (ngModelChange)="iniciarExtracaoInseyets()"
+            >Iniciar extração INSEYETS</ion-checkbox
           >
         </ion-item>
-        <ion-item>
+        <ion-item *ngIf="state().exameAtual.material.is_inseyets_extracting">
+          <ion-label class="cinza" position="fixed">Máquina LAPED - Inseyets</ion-label>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.inseyets_laped_machine"
+            (ngModelChange)="iniciarExtracaoInseyets()"
+          ></ion-input>
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.is_inseyets_extracting">
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_physical_analyzer_opening"
+            (ngModelChange)="iniciarPhysicalAnalyzer()"
+            >Iniciar Physical Analyzer</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="state().exameAtual.material.is_physical_analyzer_opening">
+          <ion-label class="cinza" position="fixed">Máquina LAPED - Physical Analyzer</ion-label>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.physical_analyzer_laped_machine"
+            (ngModelChange)="iniciarPhysicalAnalyzer()"
+          ></ion-input>
+        </ion-item>
+        <ion-item *ngIf="state().exameAtual.material.is_physical_analyzer_opening">
           <ion-select
             class="cinza"
             label="WhatsApp Physical Analyzer"

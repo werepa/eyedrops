@@ -11,7 +11,6 @@ import { Exame, Material, Usuario } from "../models"
   styleUrl: "./etiqueta-material.component.scss",
 })
 export class EtiquetaMaterialComponent {
-  @Input() usuario?: Usuario
   @Input() exame?: Exame
   @Input() isExameAtual?: boolean = false
 
@@ -20,6 +19,6 @@ export class EtiquetaMaterialComponent {
   }
 
   getUsuarioResumido() {
-    return this.usuario?.nome.split(" ")[0]
+    return this.exame?.getUserOfLastTask().nome
   }
 }

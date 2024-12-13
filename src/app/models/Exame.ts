@@ -10,6 +10,54 @@ export class Exame {
     this.reset()
   }
 
+  /*
+  // RECEBER_MATERIAL = 0,
+  // VERIFICAR_MATERIAL_LACRADO = 1,
+  // VERIFICAR_MATERIAL_DEVE_SER_LACRADO = 2,
+  // VERIFICAR_LACRE_CONFERE = 3,
+  // VERIFICAR_QTDE_SIM_CARDS = 4,
+  // VERIFICAR_QTDE_MEMORY_CARDS = 5,
+  // VERIFICAR_APARELHO_RECEBIDO_LIGADO = 6,
+  // VERIFICAR_FUNCIONAMENTO_TELA = 7,
+  // VERIFICAR_TELEFONE_BLOQUEADO = 8,
+  // VERIFICAR_FORNECIMENTO_SENHA = 9,
+  // VERIFICAR_MODO_AVIAO = 10,
+  // PREPARAR_EXTRACAO_DADOS = 11,
+  // EXTRAINDO_DADOS_APARELHO = 12,
+  // VERIFICAR_PHYSICAL_ANALYSER = 13,
+  // PROCESSANDO_IPED = 14,
+  // GERANDO_ZIP = 15,
+  // MOVENDO_ZIP = 16,
+  // TAREFAS_CONCLUIDAS = 17,
+*/
+  getStepDescricao(step: STEP): string {
+    const detalhesSteps = [
+      { codigo: STEP.RECEBER_MATERIAL, descricao: "Receber material" },
+      { codigo: STEP.VERIFICAR_MATERIAL_LACRADO, descricao: "Verificar se o material está lacrado" },
+      { codigo: STEP.VERIFICAR_MATERIAL_DEVE_SER_LACRADO, descricao: "Verificar se o material deve ser lacrado" },
+      { codigo: STEP.VERIFICAR_LACRE_CONFERE, descricao: "Conferir lacre do material com o Siscrim" },
+      { codigo: STEP.VERIFICAR_QTDE_SIM_CARDS, descricao: "Verificar quantidade de SIM cards" },
+      { codigo: STEP.VERIFICAR_QTDE_MEMORY_CARDS, descricao: "Verificar quantidade de memory cards" },
+      { codigo: STEP.VERIFICAR_APARELHO_RECEBIDO_LIGADO, descricao: "Verificar se o aparelho foi recebido ligado" },
+      { codigo: STEP.VERIFICAR_FUNCIONAMENTO_TELA, descricao: "Verificar funcionamento da tela" },
+      { codigo: STEP.VERIFICAR_TELEFONE_BLOQUEADO, descricao: "Verificar se o telefone foi recebido bloqueado" },
+      { codigo: STEP.VERIFICAR_FORNECIMENTO_SENHA, descricao: "Verificar se a senha foi fornecida" },
+      { codigo: STEP.VERIFICAR_MODO_AVIAO, descricao: "Verificar se o aparelho foi recebido em modo avião" },
+      { codigo: STEP.PREPARAR_EXTRACAO_DADOS, descricao: "Preparar aparelho para extração de dados" },
+      { codigo: STEP.EXTRAINDO_DADOS_APARELHO, descricao: "Extraindo dados do aparelho" },
+      { codigo: STEP.VERIFICAR_PHYSICAL_ANALYSER, descricao: "Verificar extração no Physical Analyzer" },
+      { codigo: STEP.PROCESSANDO_IPED, descricao: "Processando IPED" },
+      { codigo: STEP.GERANDO_ZIP, descricao: "Gerando ZIP" },
+      { codigo: STEP.MOVENDO_ZIP, descricao: "Movendo ZIP para diretório de entrega" },
+      { codigo: STEP.TAREFAS_CONCLUIDAS, descricao: "Tarefas concluídas" },
+    ]
+    return detalhesSteps.find((s) => s.codigo === step)?.descricao || ""
+  }
+
+  getStepAtual(): { codigo: STEP; descricao: string } {
+    return { codigo: this.currentStep, descricao: this.getStepDescricao(this.currentStep) }
+  }
+
   reset() {
     const detalhesTarefas = [
       {
@@ -125,24 +173,20 @@ export class Exame {
         descricao: "Registrar versão do sistema operacional",
       },
       {
-        codigo: TAREFAS.REALIZAR_PROCEDIMENTOS_DESENVOLVEDOR,
-        descricao: "Realizar procedimentos de desenvolvedor",
+        codigo: TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO,
+        descricao: "Realizar procedimentos para extração de dados",
       },
       {
-        codigo: TAREFAS.REGISTRAR_NR_MAQUINA_LAPED,
-        descricao: "Registrar número da máquina LAPED",
-      },
-      {
-        codigo: TAREFAS.REALIZAR_EXTRACAO_INSEYETS,
+        codigo: TAREFAS.INICIAR_EXTRACAO_INSEYETS,
         descricao: "Realizar extração INSEYETS",
       },
       {
-        codigo: TAREFAS.REGISTRAR_EXTRACAO_INSEYETS_OK,
-        descricao: "Registrar extração INSEYETS bem-sucedida",
+        codigo: TAREFAS.INICIAR_PHYSICAL_ANALYZER,
+        descricao: "Iniciar Physical Analyzer",
       },
       {
         codigo: TAREFAS.REGISTRAR_EXTRACAO_CHATS,
-        descricao: "Registrar extração de chats",
+        descricao: "Registrar extração de chats no P.A.",
       },
       {
         codigo: TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA,
@@ -153,7 +197,7 @@ export class Exame {
         descricao: "Registrar dados do usuário",
       },
       {
-        codigo: TAREFAS.EXECUTAR_IPED,
+        codigo: TAREFAS.INICIAR_IPED,
         descricao: "Executar IPED",
       },
       {
@@ -243,6 +287,13 @@ export class Exame {
         data: new Date(),
       })
     }
+  }
+
+  getUserOfLastTask(): Usuario {
+    const tarefas = this.getTarefasConcluidas()
+    if (!tarefas.length) return null
+    const tarefa = tarefas[tarefas.length - 1]
+    return tarefa?.historico[tarefa.historico.length - 1]?.usuario
   }
 
   imprimirJson() {

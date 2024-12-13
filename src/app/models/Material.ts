@@ -35,8 +35,11 @@ export class Material {
   private _outros_defeitos_observados: string = ""
   private _qtde_simcard: string = ""
   private _simcard1_operadora: string = ""
+  private _simcard1_numero: string = ""
   private _simcard2_operadora: string = ""
+  private _simcard2_numero: string = ""
   private _simcard3_operadora: string = ""
+  private _simcard3_numero: string = ""
   private _qtde_memorycard: string = ""
   private _fabricante: string = ""
   private _modelo: string = ""
@@ -50,7 +53,10 @@ export class Material {
   private _is_memorycard1_extracted: boolean = false
   private _is_memorycard2_extracted: boolean = false
   private _is_memorycard3_extracted: boolean = false
-  private _is_device_data_extracted: boolean = false
+  private _is_inseyets_extracting: boolean = false
+  private _inseyets_laped_machine: string = ""
+  private _is_physical_analyzer_opening: boolean = false
+  private _physical_analyzer_laped_machine: string = ""
   private _whatsapp_physical_analyzer: string = ""
 
   constructor(numero: string = "", uf: string = "GO") {
@@ -225,6 +231,14 @@ export class Material {
     this._simcard1_operadora = operadora
   }
 
+  get simcard1_numero(): string {
+    return this._simcard1_numero
+  }
+
+  set simcard1_numero(numero: string) {
+    this._simcard1_numero = numero
+  }
+
   get simcard2_operadora(): string {
     return this._simcard2_operadora
   }
@@ -233,12 +247,28 @@ export class Material {
     this._simcard2_operadora = operadora
   }
 
+  get simcard2_numero(): string {
+    return this._simcard2_numero
+  }
+
+  set simcard2_numero(numero: string) {
+    this._simcard2_numero = numero
+  }
+
   get simcard3_operadora(): string {
     return this._simcard3_operadora
   }
 
   set simcard3_operadora(operadora: string) {
     this._simcard3_operadora = operadora
+  }
+
+  get simcard3_numero(): string {
+    return this._simcard3_numero
+  }
+
+  set simcard3_numero(numero: string) {
+    this._simcard3_numero = numero
   }
 
   get qtde_memorycard(): string {
@@ -345,12 +375,36 @@ export class Material {
     this._is_memorycard3_extracted = extracted
   }
 
-  get is_device_data_extracted(): boolean {
-    return this._is_device_data_extracted
+  get is_inseyets_extracting(): boolean {
+    return this._is_inseyets_extracting
   }
 
-  set is_device_data_extracted(extracted: boolean) {
-    this._is_device_data_extracted = extracted
+  set is_inseyets_extracting(extracted: boolean) {
+    this._is_inseyets_extracting = extracted
+  }
+
+  get inseyets_laped_machine(): string {
+    return this._inseyets_laped_machine
+  }
+
+  set inseyets_laped_machine(machine: string) {
+    this._inseyets_laped_machine = machine
+  }
+
+  get is_physical_analyzer_opening(): boolean {
+    return this._is_physical_analyzer_opening
+  }
+
+  set is_physical_analyzer_opening(opening: boolean) {
+    this._is_physical_analyzer_opening = opening
+  }
+
+  get physical_analyzer_laped_machine(): string {
+    return this._physical_analyzer_laped_machine
+  }
+
+  set physical_analyzer_laped_machine(machine: string) {
+    this._physical_analyzer_laped_machine = machine
   }
 
   get whatsapp_physical_analyzer(): string {

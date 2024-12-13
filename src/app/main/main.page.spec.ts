@@ -253,7 +253,7 @@ describe("MainPage", () => {
     component.registrarAparelhoRecebidoLigado(true)
     expect(component.currentStep()).toBe(STEP.VERIFICAR_FUNCIONAMENTO_TELA)
     component.registrarFuncionamentoTela(false)
-    expect(component.currentStep()).toBe(STEP.VERIFICAR_EXTRACAO_OK)
+    expect(component.currentStep()).toBe(STEP.PREPARAR_EXTRACAO_DADOS)
     component.registrarFuncionamentoTela(true)
     expect(component.currentStep()).toBe(STEP.VERIFICAR_TELEFONE_BLOQUEADO)
   })
@@ -283,9 +283,9 @@ describe("MainPage", () => {
     component.registrarSenhaFornecida()
     expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
     component.registrarModoAviao(true)
-    expect(component.currentStep()).toBe(STEP.VERIFICAR_EXTRACAO_OK)
+    expect(component.currentStep()).toBe(STEP.PREPARAR_EXTRACAO_DADOS)
     component.registrarModoAviao(false)
-    expect(component.currentStep()).toBe(STEP.VERIFICAR_EXTRACAO_OK)
+    expect(component.currentStep()).toBe(STEP.PREPARAR_EXTRACAO_DADOS)
   })
 
   // RECEBER_MATERIAL = 0,
@@ -351,6 +351,20 @@ describe("MainPage", () => {
       }
     })
     expect(component.state().listaExames[0].getTarefa(TAREFAS.CONFERIR_LACRE).concluida).toBe(false)
+  })
+
+  it("should update tarefas after REGISTRAR_CODIGO_EPOL", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
+    component.registrarCodigoEpol()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
+    component.state().exameAtual.material.codigoEpol = "123456"
+    component.registrarCodigoEpol()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(true)
   })
 
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
@@ -675,6 +689,8 @@ describe("MainPage", () => {
     component.registrarModoAviao(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(false)
     component.registrarModoAviao(false)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(true)
@@ -691,6 +707,8 @@ describe("MainPage", () => {
     component.registrarColocarAparelhoModoAviao()
     expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.COLOCAR_APARELHO_MODO_AVIAO).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(false)
   })
 
   it("should update tarefas after ATUALIZAR_CADASTRO_MATERIAL", () => {
@@ -861,18 +879,97 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.EXTRACAO_MEMORY_CARD).concluida).toBe(true)
   })
 
-  it("should update tarefas after REGISTRAR_CODIGO_EPOL", () => {
+  // REALIZAR_PROCEDIMENTOS_EXTRACAO = 28,
+  it("should update tarefas after REALIZAR_PROCEDIMENTOS_EXTRACAO", () => {
     populateExameInicial()
     component.receberMaterial()
     component.registrarLacreConfere(true)
+    component.registrarQtdeMemoryCards(2)
+    component.registrarExtracaoMemoryCard()
+    component.registrarModoAviao(true)
     const exameAtual = component.state().exameAtual
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
-    component.registrarCodigoEpol()
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(false)
-    component.state().exameAtual.material.codigoEpol = "123456"
-    component.registrarCodigoEpol()
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(false)
+    component.registrarRealizarProcedimentosExtracao()
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
+  })
+
+  // INICIAR_EXTRACAO_INSEYETS = 30,
+  // INICIAR_PHYSICAL_ANALYZER = 31,
+  it("should update currentStep and tarefas after INICIAR_EXTRACAO_INSEYETS", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeMemoryCards(2)
+    component.registrarExtracaoMemoryCard()
+    component.registrarModoAviao(true)
+    const exameAtual = component.state().exameAtual
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(false)
+    component.registrarRealizarProcedimentosExtracao()
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(false)
+
+    exameAtual.material.is_inseyets_extracting = true
+    exameAtual.material.inseyets_laped_machine = "LAPED 01"
+    component.iniciarExtracaoInseyets()
+    expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
+    exameAtual.material.is_inseyets_extracting = false
+    exameAtual.currentStep = STEP.VERIFICAR_MODO_AVIAO
+    component.iniciarExtracaoInseyets()
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
+    exameAtual.currentStep = STEP.PREPARAR_EXTRACAO_DADOS
+    component.iniciarExtracaoInseyets()
+    expect(component.currentStep()).toBe(STEP.PREPARAR_EXTRACAO_DADOS)
+
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
+  })
+
+  // INICIAR_PHYSICAL_ANALYZER = 31,
+  // REGISTRAR_EXTRACAO_CHATS = 32,
+  // REGISTRAR_NR_TELEFONE_OPERADORA = 33,
+  // REGISTRAR_DADOS_USUARIO = 34,
+  //  INICIAR_IPED = 35,
+  fit("should update currentStep and tarefas after INICIAR_PHYSICAL_ANALYZER", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeMemoryCards(2)
+    component.registrarExtracaoMemoryCard()
+    component.registrarModoAviao(true)
+    component.registrarRealizarProcedimentosExtracao()
+    const exameAtual = component.state().exameAtual
+    exameAtual.material.is_inseyets_extracting = true
+    exameAtual.material.inseyets_laped_machine = "LAPED 01"
+    component.iniciarExtracaoInseyets()
+    expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
+    component.iniciarPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    exameAtual.material.physical_analyzer_laped_machine = "LAPED 02"
+    component.iniciarPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).concluida).toBe(false)
   })
 
   it("should extract IMEI from descricao do aparelho", () => {
@@ -901,5 +998,24 @@ describe("MainPage", () => {
     component.state().exameAtual.material.serial = ""
     component.registrarAtualizarCadastroMaterial()
     expect(component.state().exameAtual.material.serial).toBe("123456789012346")
+  })
+
+  it("should get user of last task finished", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    let usuarioAtual = component.state().usuarioAtual
+    expect(usuarioAtual.nome).toBe("Usuario 2")
+    expect(component.state().exameAtual.getUserOfLastTask()).toBe(usuarioAtual)
+    component.state().usuarioAtual = {
+      codigo: "003",
+      nome: "Usuario 3",
+      perfil: "Perito",
+      uf: "GO",
+    }
+    usuarioAtual = component.state().usuarioAtual
+    expect(usuarioAtual.nome).toBe("Usuario 3")
+    component.registrarQtdeSimCards(2)
+    expect(component.state().exameAtual.getUserOfLastTask()).toBe(usuarioAtual)
   })
 })

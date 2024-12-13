@@ -175,8 +175,11 @@ export class MainPage implements OnInit {
   }
 
   onChangeMaterialAtual(material: Material) {
+    const ultExame = this.state().exameAtual
     const exame = this.getExame(material)
     this.state.update((s) => ({ ...s, exameAtual: exame }))
+    if (ultExame === exame) this.tabAtual = "fluxo"
+    if (ultExame === exame) this.selectedTab = "fluxo"
   }
 
   get listaMateriais() {
@@ -455,7 +458,7 @@ export class MainPage implements OnInit {
       this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_APARELHO_BLOQUEADO)
       this.state().exameAtual.currentStep = this.step.VERIFICAR_TELEFONE_BLOQUEADO
     } else {
-      this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+      this.state().exameAtual.currentStep = this.step.PREPARAR_EXTRACAO_DADOS
     }
     this.state().exameAtual.setTarefaConcluida(this.tarefas.LIGAR_APARELHO, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_FUNCIONAMENTO_TELA, this.state().usuarioAtual)
@@ -486,14 +489,17 @@ export class MainPage implements OnInit {
       this.tarefas.REGISTRAR_APARELHO_RECEBIDO_MODO_AVIAO,
       this.state().usuarioAtual
     )
-    if (!value) {
+    if (value) {
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.REALIZAR_PROCEDIMENTOS_EXTRACAO)
+    } else {
       this.state().exameAtual.setTarefaAtiva(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO)
     }
-    this.state().exameAtual.currentStep = this.step.VERIFICAR_EXTRACAO_OK
+    this.state().exameAtual.currentStep = this.step.PREPARAR_EXTRACAO_DADOS
   }
 
   registrarColocarAparelhoModoAviao() {
     this.state().exameAtual.setTarefaConcluida(this.tarefas.COLOCAR_APARELHO_MODO_AVIAO, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REALIZAR_PROCEDIMENTOS_EXTRACAO)
   }
 
   registrarCarregarBateria() {
@@ -533,6 +539,16 @@ export class MainPage implements OnInit {
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_OPERADORA_SIM_CARD, this.state().usuarioAtual)
   }
 
+  registrarSimCardNumber() {
+    if (+this.state().exameAtual.material.qtde_simcard > 0 && !this.state().exameAtual.material.simcard1_numero.trim())
+      return
+    if (+this.state().exameAtual.material.qtde_simcard > 1 && !this.state().exameAtual.material.simcard2_numero.trim())
+      return
+    if (+this.state().exameAtual.material.qtde_simcard > 2 && !this.state().exameAtual.material.simcard3_numero.trim())
+      return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_NR_TELEFONE_OPERADORA, this.state().usuarioAtual)
+  }
+
   registrarExtracaoSimCard() {
     if (+this.state().exameAtual.material.qtde_simcard > 0 && !this.state().exameAtual.material.is_simcard1_extracted) return
     if (+this.state().exameAtual.material.qtde_simcard > 1 && !this.state().exameAtual.material.is_simcard2_extracted) return
@@ -553,6 +569,38 @@ export class MainPage implements OnInit {
   registrarCodigoEpol() {
     if (!this.state().exameAtual.material.codigoEpol.trim()) return
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_CODIGO_EPOL, this.state().usuarioAtual)
+  }
+
+  iniciarExtracaoInseyets() {
+    if (!this.state().exameAtual.material.is_inseyets_extracting || !this.state().exameAtual.material.inseyets_laped_machine)
+      return
+    if (this.state().exameAtual.material.is_inseyets_extracting) {
+      this.state().exameAtual.currentStep = this.step.EXTRAINDO_DADOS_APARELHO
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_PHYSICAL_ANALYZER)
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.REALIZAR_PROCEDIMENTOS_EXTRACAO, this.state().usuarioAtual)
+    }
+    if (
+      !this.state().exameAtual.material.is_inseyets_extracting &&
+      this.state().exameAtual.currentStep === this.step.EXTRAINDO_DADOS_APARELHO
+    ) {
+      this.state().exameAtual.currentStep = this.step.PREPARAR_EXTRACAO_DADOS
+    }
+  }
+
+  iniciarPhysicalAnalyzer() {
+    if (
+      !this.state().exameAtual.material.is_inseyets_extracting ||
+      !this.state().exameAtual.material.is_physical_analyzer_opening ||
+      !this.state().exameAtual.material.physical_analyzer_laped_machine
+    )
+      return
+    this.state().exameAtual.currentStep = this.step.EXTRAINDO_DADOS_APARELHO
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_PHYSICAL_ANALYZER)
+  }
+
+  registrarRealizarProcedimentosExtracao() {
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REALIZAR_PROCEDIMENTOS_EXTRACAO, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_EXTRACAO_INSEYETS)
   }
 
   finalizar() {
