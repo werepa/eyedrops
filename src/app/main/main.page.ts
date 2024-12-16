@@ -386,7 +386,7 @@ export class MainPage implements OnInit {
       this.state().exameAtual.material.imei2 = imei2
     }
 
-    const serialPattern = /(?:serial|sn|s\/n|n[úu]mero (?:de )*s[ée]rie)(?:[:=\s])*([\d\.\-\/]*)/gim
+    const serialPattern = /(?:serial(?:\snumber)*|sn|s\/n|n[úu]mero (?:de )*s[ée]rie)(?:[:=\s])*([\d\.\-\/]*)/gim
     matches = descricao.match(serialPattern)
 
     if (matches) {
@@ -412,7 +412,7 @@ export class MainPage implements OnInit {
     this.state().exameAtual.currentStep = this.step.VERIFICAR_QTDE_MEMORY_CARDS
 
     const exameAtual = this.state().exameAtual
-    exameAtual.material.qtde_simcard = value.toString()
+    exameAtual.material.qtde_simcard = value
     this.state.update((s) => ({ ...s, exameAtual }))
   }
 
@@ -433,7 +433,7 @@ export class MainPage implements OnInit {
     this.state().exameAtual.currentStep = this.step.VERIFICAR_APARELHO_RECEBIDO_LIGADO
 
     const exameAtual = this.state().exameAtual
-    exameAtual.material.qtde_memorycard = value.toString()
+    exameAtual.material.qtde_memorycard = value
     this.state.update((s) => ({ ...s, exameAtual }))
   }
 
@@ -594,13 +594,54 @@ export class MainPage implements OnInit {
       !this.state().exameAtual.material.physical_analyzer_laped_machine
     )
       return
-    this.state().exameAtual.currentStep = this.step.EXTRAINDO_DADOS_APARELHO
+    this.state().exameAtual.currentStep = this.step.VERIFICAR_PHYSICAL_ANALYSER
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.INICIAR_EXTRACAO_INSEYETS, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_PHYSICAL_ANALYZER)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_EXTRACAO_CHATS)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_NR_TELEFONE_OPERADORA)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_DADOS_USUARIO)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_IPED)
+  }
+
+  iniciarIped() {
+    if (!this.state().exameAtual.material.is_iped_opening) return
+    this.state().exameAtual.currentStep = this.step.PROCESSANDO_IPED
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.INICIAR_IPED, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_IPED_OK)
   }
 
   registrarRealizarProcedimentosExtracao() {
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REALIZAR_PROCEDIMENTOS_EXTRACAO, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_EXTRACAO_INSEYETS)
+  }
+
+  registrarWhatsAppPhysicalAnalyzer() {}
+
+  registrarDadosUsuarioPhysicalAnalyzer() {}
+
+  registrarIpedOk() {
+    if (!this.state().exameAtual.material.is_iped_ok || !this.state().exameAtual.material.is_iped_opening) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_IPED_OK, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_ZIP)
+  }
+
+  iniciarZip() {
+    if (!this.state().exameAtual.material.is_zipping) return
+    this.state().exameAtual.currentStep = this.step.GERANDO_ZIP
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.INICIAR_ZIP, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_ZIP_OK)
+  }
+
+  registrarZipOk() {
+    if (!this.state().exameAtual.material.is_zip_ok) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_ZIP_OK, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaAtiva(this.tarefas.MOVER_ZIP_DIRETORIO_ENTREGA)
+  }
+
+  registrarZipMoved() {
+    if (!this.state().exameAtual.material.is_zip_moving) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.MOVER_ZIP_DIRETORIO_ENTREGA, this.state().usuarioAtual)
+    this.state().exameAtual.currentStep = this.step.ZIP_ENVIADO
   }
 
   finalizar() {

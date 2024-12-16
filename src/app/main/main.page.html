@@ -329,8 +329,8 @@
                   interface="popover"
                   [(ngModel)]="state().exameAtual.material.senhaFornecida"
                 >
-                  <ion-select-option value="1">Sim</ion-select-option>
-                  <ion-select-option value="0">Não</ion-select-option>
+                  <ion-select-option [value]="1">Sim</ion-select-option>
+                  <ion-select-option [value]="0">Não</ion-select-option>
                 </ion-select>
               </ion-item>
               <ion-item *ngIf="+state().exameAtual.material.senhaFornecida">
@@ -413,22 +413,20 @@
           <ion-select
             label="Aparelho recebido ligado?"
             interface="popover"
-            (ngModel)="state().exameAtual.material.recebidoLigado"
-            [ngModel]="state().exameAtual.material.recebidoLigado ? '1' : '0'"
+            [(ngModel)]="state().exameAtual.material.recebidoLigado"
           >
-            <ion-select-option value="1">Sim</ion-select-option>
-            <ion-select-option value="0">Não</ion-select-option>
+            <ion-select-option [value]="1">Sim</ion-select-option>
+            <ion-select-option [value]="0">Não</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-select
             label="Recebido em modo avião?"
             interface="popover"
-            (ngModel)="state().exameAtual.material.recebidoModoAviao"
-            [ngModel]="state().exameAtual.material.recebidoModoAviao ? '1' : '0'"
+            [(ngModel)]="state().exameAtual.material.recebidoModoAviao"
           >
-            <ion-select-option value="1">Sim</ion-select-option>
-            <ion-select-option value="0">Não</ion-select-option>
+            <ion-select-option [value]="1">Sim</ion-select-option>
+            <ion-select-option [value]="0">Não</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item *ngIf="!+state().exameAtual.material.recebidoModoAviao">
@@ -444,25 +442,19 @@
           <ion-select
             label="Aparelho bloqueado?"
             interface="popover"
-            (ngModel)="state().exameAtual.material.recebidoBloqueado"
-            [ngModel]="state().exameAtual.material.recebidoBloqueado ? '1' : '0'"
+            [(ngModel)]="state().exameAtual.material.recebidoBloqueado"
           >
-            <ion-select-option value="1">Sim</ion-select-option>
-            <ion-select-option value="0">Não</ion-select-option>
+            <ion-select-option [value]="true">Sim</ion-select-option>
+            <ion-select-option [value]="false">Não</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="state().exameAtual.material.recebidoBloqueado">
-          <ion-select
-            label="Senha fornecida?"
-            interface="popover"
-            (ngModel)="state().exameAtual.material.senhaFornecida"
-            [ngModel]="state().exameAtual.material.senhaFornecida ? '1' : '0'"
-          >
-            <ion-select-option value="1">Sim</ion-select-option>
-            <ion-select-option value="0">Não</ion-select-option>
+        <ion-item *ngIf="+state().exameAtual.material.recebidoBloqueado > 0">
+          <ion-select label="Senha fornecida?" interface="popover" [(ngModel)]="state().exameAtual.material.senhaFornecida">
+            <ion-select-option [value]="1">Sim</ion-select-option>
+            <ion-select-option [value]="0">Não</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="state().exameAtual.material.recebidoBloqueado">
+        <ion-item *ngIf="+state().exameAtual.material.recebidoBloqueado > 0">
           <ion-label class="cinza" position="fixed">Senha do aparelho</ion-label>
           <ion-input class="azul ion-text-right" type="text" [(ngModel)]="state().exameAtual.material.senha"></ion-input>
         </ion-item>
@@ -542,13 +534,13 @@
         </ion-item>
         <ion-item>
           <ion-select label="Qtde Sim Cards" interface="popover" [(ngModel)]="state().exameAtual.material.qtde_simcard">
-            <ion-select-option value="0">0</ion-select-option>
-            <ion-select-option value="1">1</ion-select-option>
-            <ion-select-option value="2">2</ion-select-option>
-            <ion-select-option value="3">3</ion-select-option>
+            <ion-select-option [value]="0">0</ion-select-option>
+            <ion-select-option [value]="1">1</ion-select-option>
+            <ion-select-option [value]="2">2</ion-select-option>
+            <ion-select-option [value]="3">3</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="+state().exameAtual.material.qtde_simcard > 0">
+        <ion-item *ngIf="state().exameAtual.material.qtde_simcard > 0">
           <ion-select
             label="Sim Card 1"
             interface="popover"
@@ -738,13 +730,19 @@
           >
         </ion-item>
         <ion-item *ngIf="state().exameAtual.material.is_inseyets_extracting">
-          <ion-label class="cinza" position="fixed">Máquina LAPED - Inseyets</ion-label>
-          <ion-input
-            class="azul ion-text-right"
-            type="text"
+          <ion-select
+            label="Máquina Inseyets"
+            interface="popover"
             [(ngModel)]="state().exameAtual.material.inseyets_laped_machine"
             (ngModelChange)="iniciarExtracaoInseyets()"
-          ></ion-input>
+          >
+            <ion-select-option value="LAPED 01">LAPED 01</ion-select-option>
+            <ion-select-option value="LAPED 02">LAPED 02</ion-select-option>
+            <ion-select-option value="LAPED 03">LAPED 03</ion-select-option>
+            <ion-select-option value="LAPED 04">LAPED 04</ion-select-option>
+            <ion-select-option value="LAPED 05">LAPED 05</ion-select-option>
+            <ion-select-option value="LAPED 06">LAPED 06</ion-select-option>
+          </ion-select>
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.is_inseyets_extracting">
           <ion-checkbox
@@ -756,13 +754,19 @@
           >
         </ion-item>
         <ion-item *ngIf="state().exameAtual.material.is_physical_analyzer_opening">
-          <ion-label class="cinza" position="fixed">Máquina LAPED - Physical Analyzer</ion-label>
-          <ion-input
-            class="azul ion-text-right"
-            type="text"
+          <ion-select
+            label="Máquina Physical Analyzer"
+            interface="popover"
             [(ngModel)]="state().exameAtual.material.physical_analyzer_laped_machine"
             (ngModelChange)="iniciarPhysicalAnalyzer()"
-          ></ion-input>
+          >
+            <ion-select-option value="LAPED 01">LAPED 01</ion-select-option>
+            <ion-select-option value="LAPED 02">LAPED 02</ion-select-option>
+            <ion-select-option value="LAPED 03">LAPED 03</ion-select-option>
+            <ion-select-option value="LAPED 04">LAPED 04</ion-select-option>
+            <ion-select-option value="LAPED 05">LAPED 05</ion-select-option>
+            <ion-select-option value="LAPED 06">LAPED 06</ion-select-option>
+          </ion-select>
         </ion-item>
         <ion-item *ngIf="state().exameAtual.material.is_physical_analyzer_opening">
           <ion-select
@@ -770,11 +774,67 @@
             label="WhatsApp Physical Analyzer"
             interface="popover"
             [(ngModel)]="state().exameAtual.material.whatsapp_physical_analyzer"
+            (ngModelChange)="registrarWhatsAppPhysicalAnalyzer()"
           >
             <ion-select-option value="1">Sim</ion-select-option>
             <ion-select-option value="0">Não</ion-select-option>
           </ion-select>
         </ion-item>
+        <ion-item *ngIf="state().exameAtual.material.is_physical_analyzer_opening">
+          <ion-label class="cinza" position="stacked">Dados do usuário</ion-label>
+          <ion-input
+            class="azul ion-text-right"
+            type="text"
+            [(ngModel)]="state().exameAtual.material.dados_usuario"
+            (ngModelChange)="registrarDadosUsuarioPhysicalAnalyzer()"
+          ></ion-input>
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.is_physical_analyzer_opening">
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_iped_opening"
+            (ngModelChange)="iniciarIped()"
+            >Iniciar IPED</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.is_iped_opening">
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_iped_ok"
+            (ngModelChange)="registrarIpedOk()"
+            >Verificar IPED</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.is_iped_opening && +state().exameAtual.material.is_iped_ok">
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_zipping"
+            (ngModelChange)="iniciarZip()"
+            >Gerar ZIP mídia</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.is_zipping">
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_zip_ok"
+            (ngModelChange)="registrarZipOk()"
+            >Verificar ZIP</ion-checkbox
+          >
+        </ion-item>
+        <ion-item *ngIf="+state().exameAtual.material.is_zip_ok">
+          <ion-checkbox
+            class="cinza"
+            labelPlacement="start"
+            [(ngModel)]="state().exameAtual.material.is_zip_moving"
+            (ngModelChange)="registrarZipMoved()"
+            >Mover ZIP</ion-checkbox
+          >
+        </ion-item>
+
         <br />
         <br />
       </ion-col>

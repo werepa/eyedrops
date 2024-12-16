@@ -908,22 +908,18 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(false)
     component.registrarRealizarProcedimentosExtracao()
     expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(false)
+    expect(component.currentStep()).toBe(STEP.PREPARAR_EXTRACAO_DADOS)
 
     exameAtual.material.is_inseyets_extracting = true
     exameAtual.material.inseyets_laped_machine = "LAPED 01"
     component.iniciarExtracaoInseyets()
     expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
     exameAtual.material.is_inseyets_extracting = false
-    exameAtual.currentStep = STEP.VERIFICAR_MODO_AVIAO
     component.iniciarExtracaoInseyets()
-    expect(component.currentStep()).toBe(STEP.VERIFICAR_MODO_AVIAO)
-    exameAtual.currentStep = STEP.PREPARAR_EXTRACAO_DADOS
-    component.iniciarExtracaoInseyets()
-    expect(component.currentStep()).toBe(STEP.PREPARAR_EXTRACAO_DADOS)
-
+    expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
     expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
@@ -936,7 +932,7 @@ describe("MainPage", () => {
   // REGISTRAR_NR_TELEFONE_OPERADORA = 33,
   // REGISTRAR_DADOS_USUARIO = 34,
   //  INICIAR_IPED = 35,
-  fit("should update currentStep and tarefas after INICIAR_PHYSICAL_ANALYZER", () => {
+  it("should update currentStep and tarefas after INICIAR_PHYSICAL_ANALYZER", () => {
     populateExameInicial()
     component.receberMaterial()
     component.registrarLacreConfere(true)
@@ -957,8 +953,13 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
     component.iniciarPhysicalAnalyzer()
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    exameAtual.material.is_physical_analyzer_opening = true
+    component.iniciarPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
     exameAtual.material.physical_analyzer_laped_machine = "LAPED 02"
     component.iniciarPhysicalAnalyzer()
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_PHYSICAL_ANALYSER)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
@@ -970,6 +971,124 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).concluida).toBe(false)
+  })
+
+  // INICIAR_IPED = 35,
+  // REGISTRAR_IPED_OK = 36,
+  it("should update currentStep and tarefas after INICIAR_IPED", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeMemoryCards(2)
+    component.registrarExtracaoMemoryCard()
+    component.registrarModoAviao(true)
+    component.registrarRealizarProcedimentosExtracao()
+    const exameAtual = component.state().exameAtual
+    exameAtual.material.is_inseyets_extracting = true
+    exameAtual.material.inseyets_laped_machine = "LAPED 01"
+    component.iniciarExtracaoInseyets()
+    exameAtual.material.is_physical_analyzer_opening = true
+    exameAtual.material.physical_analyzer_laped_machine = "LAPED 02"
+    component.iniciarPhysicalAnalyzer()
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_PHYSICAL_ANALYSER)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).concluida).toBe(false)
+    component.iniciarIped()
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_PHYSICAL_ANALYSER)
+    component.state().exameAtual.material.is_iped_opening = true
+    component.iniciarIped()
+    expect(component.currentStep()).toBe(STEP.PROCESSANDO_IPED)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_IPED_OK).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_IPED_OK).concluida).toBe(false)
+  })
+
+  it("should update currentStep and tarefas after REGISTRAR_IPED_OK", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.is_iped_opening = true
+    component.iniciarIped()
+    const exameAtual = component.state().exameAtual
+    expect(component.currentStep()).toBe(STEP.PROCESSANDO_IPED)
+    component.registrarIpedOk()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_IPED_OK).concluida).toBe(false)
+    exameAtual.material.is_iped_opening = true
+    exameAtual.material.is_iped_ok = true
+    component.registrarIpedOk()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_IPED_OK).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(false)
+  })
+
+  // INICIAR_ZIP = 37,
+  // REGISTRAR_ZIP_OK = 38,
+  it("should update currentStep and tarefas after INICIAR_ZIP", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.is_iped_opening = true
+    component.iniciarIped()
+    component.state().exameAtual.material.is_iped_ok = true
+    component.registrarIpedOk()
+    const exameAtual = component.state().exameAtual
+    expect(component.currentStep()).toBe(STEP.PROCESSANDO_IPED)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(false)
+    component.iniciarZip()
+    expect(component.currentStep()).toBe(STEP.PROCESSANDO_IPED)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(false)
+    exameAtual.material.is_zipping = true
+    component.iniciarZip()
+    expect(component.currentStep()).toBe(STEP.GERANDO_ZIP)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).concluida).toBe(false)
+  })
+
+  // REGISTRAR_ZIP_OK = 38,
+  it("should update tarefas after REGISTRAR_ZIP_OK", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    const exameAtual = component.state().exameAtual
+    exameAtual.material.is_zipping = true
+    component.iniciarZip()
+    expect(component.currentStep()).toBe(STEP.GERANDO_ZIP)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).concluida).toBe(false)
+    component.registrarZipOk()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).concluida).toBe(false)
+    exameAtual.material.is_zip_ok = true
+    component.registrarZipOk()
+    expect(component.currentStep()).toBe(STEP.ZIP_VERIFICADO)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).concluida).toBe(false)
+  })
+
+  // MOVER_ZIP_DIRETORIO_ENTREGA = 39,
+  it("should update currentStep and tarefas after MOVER_ZIP_DIRETORIO_ENTREGA", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    const exameAtual = component.state().exameAtual
+    exameAtual.material.is_zipping = true
+    component.iniciarZip()
+    exameAtual.material.is_zip_ok = true
+    component.registrarZipOk()
+    expect(component.currentStep()).toBe(STEP.GERANDO_ZIP)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).concluida).toBe(false)
+    component.registrarZipMoved()
+    expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).concluida).toBe(false)
+    exameAtual.material.is_zip_moving = true
+    component.registrarZipMoved()
+    expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).concluida).toBe(true)
+    expect(component.currentStep()).toBe(STEP.ZIP_ENVIADO)
   })
 
   it("should extract IMEI from descricao do aparelho", () => {
@@ -987,6 +1106,9 @@ describe("MainPage", () => {
     populateExameInicial()
     component.receberMaterial()
     component.registrarLacreConfere(true)
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, serial number 1234/56.7890123-46"
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.serial).toBe("123456789012346")
     component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, S/N 1234/56.7890123-46"
     component.registrarAtualizarCadastroMaterial()
     expect(component.state().exameAtual.material.serial).toBe("123456789012346")
@@ -1017,5 +1139,25 @@ describe("MainPage", () => {
     expect(usuarioAtual.nome).toBe("Usuario 3")
     component.registrarQtdeSimCards(2)
     expect(component.state().exameAtual.getUserOfLastTask()).toBe(usuarioAtual)
+  })
+
+  it("should update currentStep when all tasks was finished", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    expect(component.state().exameAtual.currentStep).not.toBe(STEP.TAREFAS_CONCLUIDAS)
+    component.state().exameAtual.checkIsFinished()
+    expect(component.state().exameAtual.currentStep).not.toBe(STEP.TAREFAS_CONCLUIDAS)
+    component.state().exameAtual.currentStep = STEP.ZIP_ENVIADO
+    component.state().exameAtual.checkIsFinished()
+    expect(component.state().exameAtual.currentStep).toBe(STEP.ZIP_ENVIADO)
+    component
+      .state()
+      .exameAtual.getTarefasAtivas()
+      .forEach((tarefa) => {
+        tarefa.concluida = true
+      })
+    component.state().exameAtual.checkIsFinished()
+    expect(component.state().exameAtual.currentStep).toBe(STEP.TAREFAS_CONCLUIDAS)
   })
 })

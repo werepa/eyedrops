@@ -33,14 +33,14 @@ export class Material {
   private _funcionamento_botoes: string = ""
   private _funcionamento_conector_dados: string = ""
   private _outros_defeitos_observados: string = ""
-  private _qtde_simcard: string = ""
+  private _qtde_simcard: number = 0
   private _simcard1_operadora: string = ""
   private _simcard1_numero: string = ""
   private _simcard2_operadora: string = ""
   private _simcard2_numero: string = ""
   private _simcard3_operadora: string = ""
   private _simcard3_numero: string = ""
-  private _qtde_memorycard: string = ""
+  private _qtde_memorycard: number = 0
   private _fabricante: string = ""
   private _modelo: string = ""
   private _imei1: string = ""
@@ -58,6 +58,12 @@ export class Material {
   private _is_physical_analyzer_opening: boolean = false
   private _physical_analyzer_laped_machine: string = ""
   private _whatsapp_physical_analyzer: string = ""
+  private _dados_usuario: string = ""
+  private _is_iped_opening: boolean = false
+  private _is_iped_ok: boolean = false
+  private _is_zipping: boolean = false
+  private _is_zip_ok: boolean = false
+  private _is_zip_moving: boolean = false
 
   constructor(numero: string = "", uf: string = "GO") {
     this.filterNumero(numero)
@@ -215,11 +221,11 @@ export class Material {
     this._outros_defeitos_observados = defeitos
   }
 
-  get qtde_simcard(): string {
+  get qtde_simcard(): number {
     return this._qtde_simcard
   }
 
-  set qtde_simcard(qtde: string) {
+  set qtde_simcard(qtde: number) {
     this._qtde_simcard = qtde
   }
 
@@ -271,11 +277,11 @@ export class Material {
     this._simcard3_numero = numero
   }
 
-  get qtde_memorycard(): string {
+  get qtde_memorycard(): number {
     return this._qtde_memorycard
   }
 
-  set qtde_memorycard(qtde: string) {
+  set qtde_memorycard(qtde: number) {
     this._qtde_memorycard = qtde
   }
 
@@ -413,6 +419,54 @@ export class Material {
 
   set whatsapp_physical_analyzer(whatsapp: string) {
     this._whatsapp_physical_analyzer = whatsapp
+  }
+
+  get dados_usuario(): string {
+    return this._dados_usuario
+  }
+
+  set dados_usuario(dados: string) {
+    this._dados_usuario = dados
+  }
+
+  get is_iped_opening(): boolean {
+    return this._is_iped_opening
+  }
+
+  get is_iped_ok(): boolean {
+    return this._is_iped_ok
+  }
+
+  set is_iped_ok(ok: boolean) {
+    this._is_iped_ok = ok
+  }
+
+  set is_iped_opening(opening: boolean) {
+    this._is_iped_opening = opening
+  }
+
+  get is_zipping(): boolean {
+    return this._is_zipping
+  }
+
+  set is_zipping(zipping: boolean) {
+    this._is_zipping = zipping
+  }
+
+  get is_zip_ok(): boolean {
+    return this._is_zip_ok
+  }
+
+  set is_zip_ok(ok: boolean) {
+    this._is_zip_ok = ok
+  }
+
+  get is_zip_moving(): boolean {
+    return this._is_zip_moving
+  }
+
+  set is_zip_moving(moving: boolean) {
+    this._is_zip_moving = moving
   }
 
   // Verifica se dois materiais são iguais

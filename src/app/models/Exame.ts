@@ -48,7 +48,9 @@ export class Exame {
       { codigo: STEP.VERIFICAR_PHYSICAL_ANALYSER, descricao: "Verificar extração no Physical Analyzer" },
       { codigo: STEP.PROCESSANDO_IPED, descricao: "Processando IPED" },
       { codigo: STEP.GERANDO_ZIP, descricao: "Gerando ZIP" },
+      { codigo: STEP.ZIP_VERIFICADO, descricao: "ZIP verificado" },
       { codigo: STEP.MOVENDO_ZIP, descricao: "Movendo ZIP para diretório de entrega" },
+      { codigo: STEP.ZIP_ENVIADO, descricao: "ZIP enviado" },
       { codigo: STEP.TAREFAS_CONCLUIDAS, descricao: "Tarefas concluídas" },
     ]
     return detalhesSteps.find((s) => s.codigo === step)?.descricao || ""
@@ -205,16 +207,16 @@ export class Exame {
         descricao: "Registrar se o IPED foi bem-sucedido",
       },
       {
+        codigo: TAREFAS.INICIAR_ZIP,
+        descricao: "Iniciar compactação da mídia de entrega (ZIP)",
+      },
+      {
         codigo: TAREFAS.REGISTRAR_ZIP_OK,
         descricao: "Registrar se o ZIP foi bem-sucedido",
       },
       {
         codigo: TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA,
         descricao: "Mover ZIP para diretório de entrega",
-      },
-      {
-        codigo: TAREFAS.FINALIZAR_EXAME,
-        descricao: "Finalizar exame",
       },
     ]
 
@@ -287,6 +289,7 @@ export class Exame {
         data: new Date(),
       })
     }
+    this.checkIsFinished()
   }
 
   getUserOfLastTask(): Usuario {
@@ -294,6 +297,12 @@ export class Exame {
     if (!tarefas.length) return null
     const tarefa = tarefas[tarefas.length - 1]
     return tarefa?.historico[tarefa.historico.length - 1]?.usuario
+  }
+
+  checkIsFinished() {
+    const qtde_tarefas_pendentes = this.getTarefasAtivas().filter((t) => !t.concluida).length
+    if (this.currentStep === STEP.ZIP_ENVIADO && qtde_tarefas_pendentes === 0) this.currentStep = STEP.TAREFAS_CONCLUIDAS
+    return this.currentStep === STEP.TAREFAS_CONCLUIDAS
   }
 
   imprimirJson() {
