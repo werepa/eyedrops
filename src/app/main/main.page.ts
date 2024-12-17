@@ -64,6 +64,7 @@ export class MainPage implements OnInit {
   telaStatus = TELA_STATUS
   bateriaStatus = BATERIA_STATUS
   selectedTab = "fluxo"
+  mostrarMateriaisConcluidos = true
   mostrarTarefasConcluidas = false
   mostrarBateria = false
   tabAtual = "fluxo"
@@ -125,6 +126,9 @@ export class MainPage implements OnInit {
   }
 
   alternarVisualizacaoFluxo() {
+    if (this.tabAtual === "materiais") {
+      this.mostrarMateriaisConcluidos = !this.mostrarMateriaisConcluidos
+    }
     if (this.tabAtual === "fluxo") {
       this.mostrarTarefasConcluidas = !this.mostrarTarefasConcluidas
     }
@@ -160,10 +164,12 @@ export class MainPage implements OnInit {
   }
 
   onChangeTab() {
+    this.mostrarMateriaisConcluidos = true
     if (!this.state().exameAtual) {
       this.onChangeMaterialAtual(this.getListaMateriais()[0])
     }
     this.tabAtual = this.selectedTab
+    if (this.state().exameAtual.checkIsFinished()) this.mostrarTarefasConcluidas = true
   }
 
   onChangeUsuarioAtual(usuario: Usuario) {
@@ -405,6 +411,9 @@ export class MainPage implements OnInit {
       this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_OPERADORA_SIM_CARD)
       this.state().exameAtual.setTarefaAtiva(this.tarefas.FOTOGRAFAR_SIM_CARD)
       this.state().exameAtual.setTarefaAtiva(this.tarefas.EXTRACAO_SIM_CARD)
+      if (this.state().exameAtual.material.is_physical_analyzer_opening) {
+        this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_NR_TELEFONE_OPERADORA)
+      }
     }
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_QTDE_SIM_CARDS, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaConcluida(this.tarefas.DESLACRAR_MATERIAL, this.state().usuarioAtual)
@@ -578,6 +587,7 @@ export class MainPage implements OnInit {
       this.state().exameAtual.currentStep = this.step.EXTRAINDO_DADOS_APARELHO
       this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_PHYSICAL_ANALYZER)
       this.state().exameAtual.setTarefaConcluida(this.tarefas.REALIZAR_PROCEDIMENTOS_EXTRACAO, this.state().usuarioAtual)
+      this.state().exameAtual.setTarefaConcluida(this.tarefas.INICIAR_EXTRACAO_INSEYETS, this.state().usuarioAtual)
     }
     if (
       !this.state().exameAtual.material.is_inseyets_extracting &&
@@ -595,10 +605,11 @@ export class MainPage implements OnInit {
     )
       return
     this.state().exameAtual.currentStep = this.step.VERIFICAR_PHYSICAL_ANALYSER
-    this.state().exameAtual.setTarefaConcluida(this.tarefas.INICIAR_EXTRACAO_INSEYETS, this.state().usuarioAtual)
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.INICIAR_PHYSICAL_ANALYZER, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_PHYSICAL_ANALYZER)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_EXTRACAO_CHATS)
-    this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_NR_TELEFONE_OPERADORA)
+    if (this.state().exameAtual.material.qtde_simcard > 0)
+      this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_NR_TELEFONE_OPERADORA)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.REGISTRAR_DADOS_USUARIO)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_IPED)
   }
@@ -615,13 +626,20 @@ export class MainPage implements OnInit {
     this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_EXTRACAO_INSEYETS)
   }
 
-  registrarWhatsAppPhysicalAnalyzer() {}
+  registrarWhatsAppPhysicalAnalyzer() {
+    if (!this.state().exameAtual.material.whatsapp_physical_analyzer) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_EXTRACAO_CHATS, this.state().usuarioAtual)
+  }
 
-  registrarDadosUsuarioPhysicalAnalyzer() {}
+  registrarDadosUsuarioPhysicalAnalyzer() {
+    if (!this.state().exameAtual.material.dados_usuario) return
+    this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_DADOS_USUARIO, this.state().usuarioAtual)
+  }
 
   registrarIpedOk() {
     if (!this.state().exameAtual.material.is_iped_ok || !this.state().exameAtual.material.is_iped_opening) return
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_IPED_OK, this.state().usuarioAtual)
+    this.state().exameAtual.currentStep = this.step.IPED_VERIFICADO
     this.state().exameAtual.setTarefaAtiva(this.tarefas.INICIAR_ZIP)
   }
 
@@ -636,6 +654,7 @@ export class MainPage implements OnInit {
     if (!this.state().exameAtual.material.is_zip_ok) return
     this.state().exameAtual.setTarefaConcluida(this.tarefas.REGISTRAR_ZIP_OK, this.state().usuarioAtual)
     this.state().exameAtual.setTarefaAtiva(this.tarefas.MOVER_ZIP_DIRETORIO_ENTREGA)
+    this.state().exameAtual.currentStep = this.step.ZIP_VERIFICADO
   }
 
   registrarZipMoved() {

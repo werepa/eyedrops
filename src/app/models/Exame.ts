@@ -47,6 +47,7 @@ export class Exame {
       { codigo: STEP.EXTRAINDO_DADOS_APARELHO, descricao: "Extraindo dados do aparelho" },
       { codigo: STEP.VERIFICAR_PHYSICAL_ANALYSER, descricao: "Verificar extração no Physical Analyzer" },
       { codigo: STEP.PROCESSANDO_IPED, descricao: "Processando IPED" },
+      { codigo: STEP.IPED_VERIFICADO, descricao: "IPED verificado" },
       { codigo: STEP.GERANDO_ZIP, descricao: "Gerando ZIP" },
       { codigo: STEP.ZIP_VERIFICADO, descricao: "ZIP verificado" },
       { codigo: STEP.MOVENDO_ZIP, descricao: "Movendo ZIP para diretório de entrega" },
@@ -57,7 +58,11 @@ export class Exame {
   }
 
   getStepAtual(): { codigo: STEP; descricao: string } {
-    return { codigo: this.currentStep, descricao: this.getStepDescricao(this.currentStep) }
+    const obj = { codigo: this.currentStep, descricao: this.getStepDescricao(this.currentStep) }
+    if (obj.codigo === STEP.EXTRAINDO_DADOS_APARELHO) obj.descricao += ` (${this.material.inseyets_laped_machine})`
+    if (obj.codigo === STEP.VERIFICAR_PHYSICAL_ANALYSER)
+      obj.descricao += ` (${this.material.physical_analyzer_laped_machine})`
+    return obj
   }
 
   reset() {

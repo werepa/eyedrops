@@ -922,7 +922,7 @@ describe("MainPage", () => {
     expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
     expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
   })
@@ -936,7 +936,7 @@ describe("MainPage", () => {
     populateExameInicial()
     component.receberMaterial()
     component.registrarLacreConfere(true)
-    component.registrarQtdeMemoryCards(2)
+    component.registrarQtdeSimCards(0)
     component.registrarExtracaoMemoryCard()
     component.registrarModoAviao(true)
     component.registrarRealizarProcedimentosExtracao()
@@ -948,29 +948,77 @@ describe("MainPage", () => {
     expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REALIZAR_PROCEDIMENTOS_EXTRACAO).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
     component.iniciarPhysicalAnalyzer()
-    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
     exameAtual.material.is_physical_analyzer_opening = true
     component.iniciarPhysicalAnalyzer()
-    expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
     expect(component.currentStep()).toBe(STEP.EXTRAINDO_DADOS_APARELHO)
     exameAtual.material.physical_analyzer_laped_machine = "LAPED 02"
     component.iniciarPhysicalAnalyzer()
     expect(component.currentStep()).toBe(STEP.VERIFICAR_PHYSICAL_ANALYSER)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_EXTRACAO_INSEYETS).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).ativa).toBe(true)
-    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.INICIAR_PHYSICAL_ANALYZER).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).concluida).toBe(false)
-    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).ativa).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).concluida).toBe(false)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_IPED).concluida).toBe(false)
+    component.registrarQtdeSimCards(1)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_OPERADORA_SIM_CARD).concluida).toBe(false)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).concluida).toBe(false)
+  })
+
+  // REGISTRAR_EXTRACAO_CHATS = 32,
+  it("should update tarefas after REGISTRAR_EXTRACAO_CHATS", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.registrarQtdeSimCards(1)
+    component.state().exameAtual.material.is_inseyets_extracting = true
+    component.state().exameAtual.material.is_physical_analyzer_opening = true
+    component.state().exameAtual.material.physical_analyzer_laped_machine = "LAPED 02"
+    component.iniciarPhysicalAnalyzer()
+    const exameAtual = component.state().exameAtual
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_PHYSICAL_ANALYSER)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).concluida).toBe(false)
+    component.registrarWhatsAppPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).concluida).toBe(false)
+    exameAtual.material.whatsapp_physical_analyzer = "Sim"
+    component.registrarWhatsAppPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_EXTRACAO_CHATS).concluida).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_NR_TELEFONE_OPERADORA).concluida).toBe(false)
+  })
+
+  // REGISTRAR_DADOS_USUARIO = 34,
+  it("should update tarefas after REGISTRAR_DADOS_USUARIO", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.is_inseyets_extracting = true
+    component.state().exameAtual.material.is_physical_analyzer_opening = true
+    component.state().exameAtual.material.physical_analyzer_laped_machine = "LAPED 02"
+    component.iniciarPhysicalAnalyzer()
+    const exameAtual = component.state().exameAtual
+    expect(component.currentStep()).toBe(STEP.VERIFICAR_PHYSICAL_ANALYSER)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).ativa).toBe(true)
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).concluida).toBe(false)
+    component.registrarDadosUsuarioPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).concluida).toBe(false)
+    exameAtual.material.dados_usuario = "fulano@gmail.com"
+    component.registrarDadosUsuarioPhysicalAnalyzer()
+    expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_DADOS_USUARIO).concluida).toBe(true)
   })
 
   // INICIAR_IPED = 35,
@@ -1016,6 +1064,7 @@ describe("MainPage", () => {
     exameAtual.material.is_iped_opening = true
     exameAtual.material.is_iped_ok = true
     component.registrarIpedOk()
+    expect(component.currentStep()).toBe(STEP.IPED_VERIFICADO)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_IPED_OK).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(false)
@@ -1032,11 +1081,11 @@ describe("MainPage", () => {
     component.state().exameAtual.material.is_iped_ok = true
     component.registrarIpedOk()
     const exameAtual = component.state().exameAtual
-    expect(component.currentStep()).toBe(STEP.PROCESSANDO_IPED)
+    expect(component.currentStep()).toBe(STEP.IPED_VERIFICADO)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(false)
     component.iniciarZip()
-    expect(component.currentStep()).toBe(STEP.PROCESSANDO_IPED)
+    expect(component.currentStep()).toBe(STEP.IPED_VERIFICADO)
     expect(exameAtual.getTarefa(TAREFAS.INICIAR_ZIP).concluida).toBe(false)
     exameAtual.material.is_zipping = true
     component.iniciarZip()
@@ -1079,7 +1128,7 @@ describe("MainPage", () => {
     component.iniciarZip()
     exameAtual.material.is_zip_ok = true
     component.registrarZipOk()
-    expect(component.currentStep()).toBe(STEP.GERANDO_ZIP)
+    expect(component.currentStep()).toBe(STEP.ZIP_VERIFICADO)
     expect(exameAtual.getTarefa(TAREFAS.REGISTRAR_ZIP_OK).concluida).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).ativa).toBe(true)
     expect(exameAtual.getTarefa(TAREFAS.MOVER_ZIP_DIRETORIO_ENTREGA).concluida).toBe(false)

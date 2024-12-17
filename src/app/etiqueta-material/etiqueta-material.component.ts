@@ -21,4 +21,8 @@ export class EtiquetaMaterialComponent {
   getUsuarioResumido() {
     return this.exame?.getUserOfLastTask().nome
   }
+
+  isExameFinalizado() {
+    return this.exame?.checkIsFinished()
+  }
 }

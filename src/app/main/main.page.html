@@ -26,7 +26,7 @@
   }"
     [(ngModel)]="selectedTab"
   >
-    <ion-segment-button value="materiais" *ngIf="getListaMateriais().length" (click)="onChangeTab()">
+    <ion-segment-button value="materiais" *ngIf="getListaMateriais().length" (click)="alternarVisualizacaoFluxo()">
       <ion-label class="small-text">Materiais</ion-label>
     </ion-segment-button>
     <ion-segment-button value="fluxo" (click)="alternarVisualizacaoFluxo()">
@@ -51,7 +51,11 @@
     <ion-row *ngIf="selectedTab==='materiais'">
       <ion-col size="12" size-sm="8" offset-sm="2" class="lista-materiais">
         <ion-item lines="none" *ngFor="let exame of state().listaExames" (click)="onChangeMaterialAtual(exame.material)">
-          <app-etiqueta-material [exame]="exame" [isExameAtual]="isExameAtual(exame.material)" />
+          <app-etiqueta-material
+            *ngIf="mostrarMateriaisConcluidos || !exame.checkIsFinished() "
+            [exame]="exame"
+            [isExameAtual]="isExameAtual(exame.material)"
+          />
         </ion-item>
       </ion-col>
     </ion-row>
@@ -329,8 +333,8 @@
                   interface="popover"
                   [(ngModel)]="state().exameAtual.material.senhaFornecida"
                 >
-                  <ion-select-option [value]="1">Sim</ion-select-option>
-                  <ion-select-option [value]="0">Não</ion-select-option>
+                  <ion-select-option [value]="true">Sim</ion-select-option>
+                  <ion-select-option [value]="false">Não</ion-select-option>
                 </ion-select>
               </ion-item>
               <ion-item *ngIf="+state().exameAtual.material.senhaFornecida">
@@ -415,8 +419,8 @@
             interface="popover"
             [(ngModel)]="state().exameAtual.material.recebidoLigado"
           >
-            <ion-select-option [value]="1">Sim</ion-select-option>
-            <ion-select-option [value]="0">Não</ion-select-option>
+            <ion-select-option [value]="true">Sim</ion-select-option>
+            <ion-select-option [value]="false">Não</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
@@ -425,8 +429,8 @@
             interface="popover"
             [(ngModel)]="state().exameAtual.material.recebidoModoAviao"
           >
-            <ion-select-option [value]="1">Sim</ion-select-option>
-            <ion-select-option [value]="0">Não</ion-select-option>
+            <ion-select-option [value]="true">Sim</ion-select-option>
+            <ion-select-option [value]="false">Não</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item *ngIf="!+state().exameAtual.material.recebidoModoAviao">
@@ -450,8 +454,8 @@
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.recebidoBloqueado > 0">
           <ion-select label="Senha fornecida?" interface="popover" [(ngModel)]="state().exameAtual.material.senhaFornecida">
-            <ion-select-option [value]="1">Sim</ion-select-option>
-            <ion-select-option [value]="0">Não</ion-select-option>
+            <ion-select-option [value]="true">Sim</ion-select-option>
+            <ion-select-option [value]="false">Não</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item *ngIf="+state().exameAtual.material.recebidoBloqueado > 0">
@@ -534,8 +538,8 @@
         </ion-item>
         <ion-item>
           <ion-select label="Qtde Sim Cards" interface="popover" [(ngModel)]="state().exameAtual.material.qtde_simcard">
-            <ion-select-option [value]="0">0</ion-select-option>
-            <ion-select-option [value]="1">1</ion-select-option>
+            <ion-select-option [value]="false">0</ion-select-option>
+            <ion-select-option [value]="true">1</ion-select-option>
             <ion-select-option [value]="2">2</ion-select-option>
             <ion-select-option [value]="3">3</ion-select-option>
           </ion-select>
