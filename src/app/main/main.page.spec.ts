@@ -1140,7 +1140,32 @@ describe("MainPage", () => {
     expect(component.currentStep()).toBe(STEP.ZIP_ENVIADO)
   })
 
-  it("should extract IMEI from descricao do aparelho", () => {
+  it("should extract fabricante e modelo from descricao", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.descricao = "aparelho Samsung Galaxy A10 32GB"
+    component.state().exameAtual.material.fabricante = ""
+    component.state().exameAtual.material.modelo = ""
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.fabricante).toBe("Samsung")
+    expect(component.state().exameAtual.material.modelo).toBe("Galaxy A10 32GB")
+    component.state().exameAtual.material.descricao = "aparelho da marca Apple, modelo Iphone 12, 128GB, cor preta"
+    component.state().exameAtual.material.fabricante = ""
+    component.state().exameAtual.material.modelo = ""
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.fabricante).toBe("Apple")
+    expect(component.state().exameAtual.material.modelo).toBe("iPhone 12 128GB")
+    component.state().exameAtual.material.descricao = "aparelho iPhone 14 cor preta"
+    component.state().exameAtual.material.fabricante = ""
+    component.state().exameAtual.material.modelo = ""
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.fabricante).toBe("Apple")
+    expect(component.state().exameAtual.material.modelo).toBe("iPhone 14")
+    expect(component.state().exameAtual.getTarefa(TAREFAS.REGISTRAR_FABRICANTE_MODELO).concluida).toBe(true)
+  })
+
+  it("should extract IMEI from descricao", () => {
     populateExameInicial()
     component.receberMaterial()
     component.registrarLacreConfere(true)
@@ -1151,7 +1176,7 @@ describe("MainPage", () => {
     expect(component.state().exameAtual.material.imei2).toBe("123456789012346")
   })
 
-  it("should extract serial number from descricao do aparelho", () => {
+  it("should extract serial number from descricao", () => {
     populateExameInicial()
     component.receberMaterial()
     component.registrarLacreConfere(true)
@@ -1169,6 +1194,29 @@ describe("MainPage", () => {
     component.state().exameAtual.material.serial = ""
     component.registrarAtualizarCadastroMaterial()
     expect(component.state().exameAtual.material.serial).toBe("123456789012346")
+  })
+
+  it("should extract codigo ePol from descricao", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, ePol 123.456-00"
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.codigoEpol).toBe("12345600")
+    expect(component.state().exameAtual.getTarefa(TAREFAS.REGISTRAR_CODIGO_EPOL).concluida).toBe(true)
+  })
+
+  it("should extract senha from descricao ", () => {
+    populateExameInicial()
+    component.receberMaterial()
+    component.registrarLacreConfere(true)
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, senha: 123456"
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.senha).toBe("123456")
+    component.state().exameAtual.material.descricao = "Samsung Galaxy A10 32GB, senha abc123456"
+    component.registrarAtualizarCadastroMaterial()
+    expect(component.state().exameAtual.material.senha).toBe("abc123456")
+    expect(component.state().exameAtual.getTarefa(TAREFAS.REGISTRAR_DETALHES_SENHA).concluida).toBe(true)
   })
 
   it("should get user of last task finished", () => {

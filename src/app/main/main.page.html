@@ -433,7 +433,7 @@
             <ion-select-option [value]="false">Não</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item *ngIf="!+state().exameAtual.material.recebidoModoAviao">
+        <ion-item *ngIf="!+state().exameAtual.material.recebidoModoAviao && +state().exameAtual.material.telaFuncionando">
           <ion-checkbox
             class="cinza"
             labelPlacement="start"
@@ -538,8 +538,8 @@
         </ion-item>
         <ion-item>
           <ion-select label="Qtde Sim Cards" interface="popover" [(ngModel)]="state().exameAtual.material.qtde_simcard">
-            <ion-select-option [value]="false">0</ion-select-option>
-            <ion-select-option [value]="true">1</ion-select-option>
+            <ion-select-option [value]="0">0</ion-select-option>
+            <ion-select-option [value]="1">1</ion-select-option>
             <ion-select-option [value]="2">2</ion-select-option>
             <ion-select-option [value]="3">3</ion-select-option>
           </ion-select>
@@ -626,10 +626,10 @@
             interface="popover"
             [(ngModel)]="state().exameAtual.material.qtde_memorycard"
           >
-            <ion-select-option value="0">0</ion-select-option>
-            <ion-select-option value="1">1</ion-select-option>
-            <ion-select-option value="2">2</ion-select-option>
-            <ion-select-option value="3">3</ion-select-option>
+            <ion-select-option [value]="0">0</ion-select-option>
+            <ion-select-option [value]="1">1</ion-select-option>
+            <ion-select-option [value]="2">2</ion-select-option>
+            <ion-select-option [value]="3">3</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>

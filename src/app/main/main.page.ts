@@ -368,16 +368,14 @@ export class MainPage implements OnInit {
 
   // REGISTRAR_ATUALIZACAO_CADASTRO = 4,
   registrarAtualizarCadastroMaterial() {
-    const descricao = this.state().exameAtual.material.descricao.trim()
+    let descricao = this.state().exameAtual.material.descricao.trim()
     if (!descricao) return
     this.state().exameAtual.setTarefaConcluida(this.tarefas.ATUALIZAR_CADASTRO_MATERIAL, this.state().usuarioAtual)
 
     const imeiPattern = /imei\s*\d{0,1}[:]*\s*([\d\.\-\/]*)/gim
     let matches = descricao.match(imeiPattern)
-
     let imei1 = ""
     let imei2 = ""
-
     if (matches) {
       matches.forEach((match) => {
         const lista = match.split(" ")
@@ -394,12 +392,70 @@ export class MainPage implements OnInit {
 
     const serialPattern = /(?:serial(?:\snumber)*|sn|s\/n|n[úu]mero (?:de )*s[ée]rie)(?:[:=\s])*([\d\.\-\/]*)/gim
     matches = descricao.match(serialPattern)
-
     if (matches) {
       const lista = matches[0].split(" ")
       const serial = lista[lista.length - 1].replace(/\D/g, "")
       this.state().exameAtual.material.serial = serial
     }
+
+    const epolPattern = /(?:epol[\D\s]*)([\d\.\-\/]*)/gim
+    matches = descricao.match(epolPattern)
+    if (matches) {
+      const lista = matches[0].split(" ")
+      const codigoEpol = lista[lista.length - 1].replace(/\D/g, "")
+      this.state().exameAtual.material.codigoEpol = codigoEpol
+    }
+    this.registrarCodigoEpol()
+
+    const fabricantePattern = /(Apple|Asus|LG|Motorola|Nokia|Samsung|Sony|Xiaomi)/gim
+    matches = descricao.match(fabricantePattern)
+    let fabricante = ""
+    let modelo = ""
+    let index = null
+    if (matches) {
+      const lista = matches[0].split(" ")
+      fabricante = lista[lista.length - 1]
+      descricao = descricao.substring(descricao.indexOf(fabricante) + fabricante.length).trim()
+    }
+    if (!fabricante) {
+      index = descricao.toLowerCase().indexOf("iphone")
+      if (index > -1) {
+        fabricante = "Apple"
+        descricao = descricao.substring(index).trim()
+      }
+      index = descricao.toLowerCase().indexOf("galaxy")
+      if (index > -1) {
+        fabricante = "Samsung"
+        descricao = descricao.substring(index).trim()
+      }
+      index = descricao.toLowerCase().indexOf("redmi")
+      if (index > -1) {
+        fabricante = "Xiaomi"
+        descricao = descricao.substring(index).trim()
+      }
+    }
+    modelo = descricao
+    modelo = modelo.replace(/iphone/gi, "iPhone")
+    this.state().exameAtual.material.fabricante = fabricante
+    const indexModelo = modelo.toLowerCase().indexOf("modelo")
+    if (indexModelo > -1) {
+      modelo = modelo.substring(indexModelo + "modelo".length).trim()
+    }
+    const modeloPattern = /(\w+\s(?:\w*\d+(?:[,]*\s\d+GB)*)*)/gim
+    matches = modelo.match(modeloPattern)
+    if (matches) {
+      modelo = matches[0]
+    }
+    modelo = modelo.replace(/[,]/g, "")
+    this.state().exameAtual.material.modelo = modelo
+    this.registrarFabricanteModelo()
+
+    const senhaPattern = /senha[\s:]*([\w\d]*)/gim
+    matches = descricao.match(senhaPattern)
+    if (matches) {
+      this.state().exameAtual.material.senha = matches[0].split(" ")[1]
+    }
+    this.registrarSenhaFornecida()
   }
 
   // REGISTRAR_OPERADORA_SIM_CARD = 10,
