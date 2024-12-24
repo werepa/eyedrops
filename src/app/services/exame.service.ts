@@ -1,5 +1,6 @@
-import { Injectable, signal, WritableSignal } from "@angular/core"
+import { Injectable, Inject, signal, WritableSignal } from "@angular/core"
 import { TAREFAS, STEP, Usuario, Exame, Material } from "../models"
+import { EyedropsRepository } from "../Repository"
 
 @Injectable({
   providedIn: "root",
@@ -15,7 +16,21 @@ export class ExameService {
     exameAtual: null,
   })
 
-  constructor() {}
+  constructor(@Inject("EYEDROPS_REPOSITORY") public repository: EyedropsRepository) {}
+
+  async syncWithFirebase() {
+    await this.repository
+      .save(new Exame(new Material("123")))
+      .then(() => {
+        console.log("Document successfully written!")
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error)
+      })
+    await this.repository.getByCodigo("0123/2024 GO").then((exame) => {
+      console.log("getByCodigo => exame", exame)
+    })
+  }
 
   get state$() {
     return this.state

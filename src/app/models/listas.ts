@@ -96,3 +96,9 @@ export type Tarefa = {
   ativa: boolean
   concluida: boolean
 }
+
+export enum EXAME_STATUS {
+  DISPONIVEL,
+  BLOQUEADO,
+  CONCLUIDO,
+}

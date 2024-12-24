@@ -11,6 +11,9 @@
       <span class="small-text"> {{ state().exameAtual.material.uf }} </span>
     </ion-title>
     <ion-buttons slot="end" *ngIf="state().exameAtual">
+      <ion-button (click)="syncWithFirebase()">
+        <ion-icon name="sync-outline"></ion-icon>
+      </ion-button>
       <ion-button (click)="addExame()">
         <ion-icon slot="icon-only" name="add-outline"></ion-icon>
       </ion-button>

@@ -22,7 +22,7 @@ import { AlertController, IonicModule } from "@ionic/angular"
 import { CommonModule } from "@angular/common"
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout"
 import { addIcons } from "ionicons"
-import { addOutline, camera, cameraOutline, checkmarkOutline, printOutline, trashOutline } from "ionicons/icons"
+import { addOutline, camera, cameraOutline, checkmarkOutline, printOutline, syncOutline, trashOutline } from "ionicons/icons"
 import { BATERIA_STATUS, STEP, TAREFAS, TELA_STATUS } from "../models/listas"
 import { AuthService } from "../services/auth.service"
 import { GaleriaFotosComponent } from "../galeria-fotos/galeria-fotos.component"
@@ -73,7 +73,7 @@ export class MainPage implements OnInit {
 
   constructor(private exameService: ExameService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
     this.state = this.exameService.state
-    addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline })
+    addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline, syncOutline })
   }
 
   ngOnInit() {
@@ -100,6 +100,11 @@ export class MainPage implements OnInit {
     this.selectedTab = "fluxo"
     this.state.update((s) => ({ ...s, exameAtual: null }))
     this.mostrarBateria = false
+  }
+
+  //sincroniza dados com Firebase
+  syncWithFirebase() {
+    this.exameService.syncWithFirebase()
   }
 
   isExameAtual(material: Material): boolean {

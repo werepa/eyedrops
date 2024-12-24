@@ -469,6 +469,10 @@ export class Material {
     this._is_zip_moving = moving
   }
 
+  get codigo() {
+    return `${this._numero} ${this._uf}`
+  }
+
   // Verifica se dois materiais são iguais
   public equal(material: Material): boolean {
     return this._numero === this.formatNumber(material.numero) && this._uf === material.uf.toUpperCase()

@@ -1,13 +1,40 @@
 import { Material, Usuario } from "."
-import { STEP, Tarefa, TAREFAS } from "./listas"
+import { EXAME_STATUS, STEP, Tarefa, TAREFAS } from "./listas"
 
 export class Exame {
   private _embalagem: string = ""
   private _tarefas: Tarefa[] = []
   private _currentStep: STEP = STEP.RECEBER_MATERIAL
+  private _material: Material
+  private _status: {
+    codigo: EXAME_STATUS
+    data: Date
+    usuario: Usuario
+  } = {
+    codigo: EXAME_STATUS.BLOQUEADO,
+    data: new Date(),
+    usuario: null,
+  }
 
-  constructor(private _material: Material) {
+  constructor(material: Material) {
+    this.material = material
     this.reset()
+  }
+
+  get status(): any {
+    return this._status
+  }
+
+  set status(status: any) {
+    this._status = status
+  }
+
+  get material(): Material {
+    return this._material
+  }
+
+  set material(material: Material) {
+    this._material = material
   }
 
   /*
@@ -243,10 +270,6 @@ export class Exame {
 
   set embalagem(uuid: string) {
     this._embalagem = uuid
-  }
-
-  get material(): Material {
-    return this._material
   }
 
   get tarefas(): Tarefa[] {

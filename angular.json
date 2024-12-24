@@ -26,7 +26,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "public",
+                "src/assets"
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
@@ -80,7 +81,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "public",
+                "src/assets"
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
