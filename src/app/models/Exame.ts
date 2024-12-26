@@ -1,7 +1,9 @@
 import { Material, Usuario } from "."
+import { ExameDTO } from "./ExameDTO"
 import { EXAME_STATUS, STEP, Tarefa, TAREFAS } from "./listas"
 
 export class Exame {
+  private _id: string
   private _embalagem: string = ""
   private _tarefas: Tarefa[] = []
   private _currentStep: STEP = STEP.RECEBER_MATERIAL
@@ -16,9 +18,40 @@ export class Exame {
     usuario: null,
   }
 
-  constructor(material: Material) {
+  private constructor(material: Material) {
     this.material = material
     this.reset()
+  }
+
+  static create(exameDTO: ExameDTO): Exame {
+    const exame = new Exame(Material.create(exameDTO.material))
+    exame._id = exameDTO.id
+    exame.embalagem = exameDTO.embalagem ?? ""
+    exame.currentStep = exameDTO.currentStep ?? STEP.RECEBER_MATERIAL
+    exame.status = {
+      codigo: exameDTO.status?.codigo ?? EXAME_STATUS.BLOQUEADO,
+      data: exameDTO.status?.data ? new Date(exameDTO.status?.data) : new Date(),
+      usuario: exameDTO.status?.usuario ? Usuario.create(exameDTO.status.usuario) : null,
+    }
+    return exame
+  }
+
+  toPersistence(): ExameDTO {
+    return {
+      id: this.id ?? "",
+      embalagem: this.embalagem,
+      currentStep: this.currentStep,
+      material: this.material?.toPersistence(),
+      status: {
+        codigo: this.status.codigo,
+        data: this.status.data.toISOString(),
+        usuario: this.status.usuario?.toPersistence() ?? null,
+      },
+    }
+  }
+
+  get id(): string {
+    return this._id
   }
 
   get status(): any {

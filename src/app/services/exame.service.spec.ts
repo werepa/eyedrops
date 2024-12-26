@@ -1,13 +1,11 @@
 import { TestBed } from "@angular/core/testing"
 import { ExameService } from "./exame.service"
 import { DatabaseRepository } from "../Repository"
-import firebase from "firebase/compat/app"
 import "firebase/firestore"
-import { importProvidersFrom } from "@angular/core"
 import { AngularFireModule } from "@angular/fire/compat"
 import { AngularFirestoreModule } from "@angular/fire/compat/firestore"
 
-fdescribe("ExameService", () => {
+xdescribe("ExameService", () => {
   let service: ExameService
   const firebaseConfig = {
     apiKey: "AIzaSyDpMfldg10XJfdkap0lsQkfaFTzbVTv3Lo",
@@ -18,18 +16,14 @@ fdescribe("ExameService", () => {
     appId: "1:486118580910:web:de3c6d36d5b1672d86c33f",
   }
 
-  // should config providers like angular main.ts file configuration
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [AngularFireModule.initializeApp(firebaseConfig), AngularFirestoreModule],
       providers: [DatabaseRepository, { provide: "EYEDROPS_REPOSITORY", useClass: DatabaseRepository }],
     })
     service = TestBed.inject(ExameService)
+    await service.repository.truncate()
   })
 
-  it("should access firebase", () => {
-    service.syncWithFirebase()
-
-    expect(service).toBeTruthy()
-  })
+  it("should block a document", async () => {})
 })

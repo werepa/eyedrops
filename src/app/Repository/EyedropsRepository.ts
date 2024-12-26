@@ -1,8 +1,10 @@
 import { Exame } from "../models"
+import { ExameDTO } from "../models/ExameDTO"
 
 export interface EyedropsRepository {
   save(exame: Exame): Promise<void>
-  getByCodigo(codigo: string): Promise<any>
-  getByUF(codigo: string): Promise<any[]>
+  getAll(): Promise<ExameDTO[]>
+  getByCodigo(codigo: string): Promise<ExameDTO>
+  getByUF(codigo: string): Promise<ExameDTO[]>
   truncate(): Promise<void>
 }

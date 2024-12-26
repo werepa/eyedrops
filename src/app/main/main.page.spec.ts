@@ -2,35 +2,31 @@ import { ComponentFixture, TestBed } from "@angular/core/testing"
 import { MainPage } from "./main.page"
 import { STEP, TAREFAS } from "../models/listas"
 import { Exame, Material, Usuario } from "../models"
-import { AuthService } from "../services/auth.service"
-import { WritableSignal } from "@angular/core"
 import { ExameService, ExameState } from "../services/exame.service"
 
 describe("MainPage", () => {
   let component: MainPage
   let fixture: ComponentFixture<MainPage>
   let exame: Exame
-
-  const authServiceMock = {
-    getUsuarioAtual: () =>
-      new Usuario({
-        codigo: "002",
-        nome: "Usuario 2",
-        uf: "GO",
-        perfil: "Perito",
-      }),
-  }
+  let usuarioAtual: Usuario
 
   beforeEach(async () => {
     fixture = await TestBed.configureTestingModule({
       imports: [MainPage],
-      providers: [ExameService, { provide: AuthService, useValue: authServiceMock }],
+      providers: [ExameService, { provide: "EYEDROPS_REPOSITORY", useClass: class {} }],
     }).compileComponents()
     fixture = TestBed.createComponent(MainPage)
     component = fixture.componentInstance
     component.ngOnInit()
-    component.onChangeUsuarioAtual(authServiceMock.getUsuarioAtual())
-    exame = new Exame(new Material("1"))
+    usuarioAtual = Usuario.create({
+      codigo: "002",
+      nome: "Usuario 2",
+      uf: "GO",
+      perfil: "Perito",
+    })
+    component.onChangeUsuarioAtual(usuarioAtual)
+    const material = Material.create({ numero: "1" })
+    exame = Exame.create({ material: material.toPersistence() })
   })
 
   function populateMaterialFields() {
@@ -53,12 +49,12 @@ describe("MainPage", () => {
     expect(component.state().action).toBe(TAREFAS.RECEBER_MATERIAL)
     expect(component.state().status).toBe(STEP.RECEBER_MATERIAL)
     expect(component.state().listaExames).toEqual([])
-    expect(component.state().usuarioAtual).toEqual(authServiceMock.getUsuarioAtual())
+    expect(component.state().usuarioAtual).toEqual(usuarioAtual)
     expect(component.state().exameAtual).toBeNull()
   })
 
   it("should create exame when calling getExame if not exists", () => {
-    const material = new Material("0123/2024")
+    const material = Material.create({ numero: "0123/2024" })
     expect(component.state().listaExames.length).toBe(0)
     const exame = component.getExame(material)
     expect(exame).toBeDefined()
@@ -71,8 +67,8 @@ describe("MainPage", () => {
   })
 
   it("should return the correct exame when calling getExame", () => {
-    const material1 = new Material("0123/2024")
-    const material2 = new Material("456/24")
+    const material1 = Material.create({ numero: "0123/2024" })
+    const material2 = Material.create({ numero: "456/24" })
     component.getExame(material1)
     component.getExame(material2)
     expect(component.state().exameAtual.material).toEqual(material1)
@@ -81,7 +77,7 @@ describe("MainPage", () => {
     expect(exame.material).toEqual(material1)
   })
 
-  it("should add a new material form control when calling addNrMaterial", () => {
+  it("should add a Material.create form control when calling addNrMaterial", () => {
     component.ngOnInit()
     let nrMateriais = component.getMateriaisControls()
     expect(nrMateriais.length).toBe(1)
@@ -90,8 +86,8 @@ describe("MainPage", () => {
   })
 
   it("should return the current exame when calling getExameAtual", () => {
-    const material1 = new Material("0123/2024")
-    const material2 = new Material("456/24")
+    const material1 = Material.create({ numero: "0123/2024" })
+    const material2 = Material.create({ numero: "456/24" })
     component.getExame(material1)
     component.getExame(material2)
     component.onChangeMaterialAtual(material1)
@@ -106,7 +102,7 @@ describe("MainPage", () => {
     component.state.update((s) => ({ ...s, listaExames }))
     expect(component.state().listaExames.length).toBe(1)
     populateMaterialFields()
-    const material = new Material("0123/2024")
+    const material = Material.create({ numero: "0123/2024" })
     component.getExame(material)
     component.onChangeMaterialAtual(material)
   }
@@ -1226,12 +1222,12 @@ describe("MainPage", () => {
     let usuarioAtual = component.state().usuarioAtual
     expect(usuarioAtual.nome).toBe("Usuario 2")
     expect(component.state().exameAtual.getUserOfLastTask()).toBe(usuarioAtual)
-    component.state().usuarioAtual = {
+    component.state().usuarioAtual = Usuario.create({
       codigo: "003",
       nome: "Usuario 3",
       perfil: "Perito",
       uf: "GO",
-    }
+    })
     usuarioAtual = component.state().usuarioAtual
     expect(usuarioAtual.nome).toBe("Usuario 3")
     component.registrarQtdeSimCards(2)

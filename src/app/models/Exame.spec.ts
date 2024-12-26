@@ -1,5 +1,5 @@
 import { Exame } from "./Exame"
-import { Material, STEP, TAREFAS, Usuario } from "."
+import { ExameDTO, Material, STEP, TAREFAS, Usuario } from "."
 
 describe("Exame", () => {
   let exame: Exame
@@ -7,14 +7,14 @@ describe("Exame", () => {
   let usuario: Usuario
 
   beforeEach(() => {
-    material = new Material("123/2024")
-    usuario = new Usuario({
+    material = Material.create({ numero: "123/2024" })
+    usuario = Usuario.create({
       codigo: "001",
       nome: "Usuario 1",
       uf: "GO",
       perfil: "Perito",
     })
-    exame = new Exame(material)
+    exame = Exame.create({ material: material.toPersistence() })
   })
 
   it("should create an instance of Exame", () => {
@@ -22,7 +22,7 @@ describe("Exame", () => {
   })
 
   it("should have the correct material", () => {
-    expect(exame.material).toBe(material)
+    expect(exame.material.toPersistence()).toEqual(material.toPersistence())
   })
 
   it("should have the correct currentStep", () => {
@@ -93,5 +93,42 @@ describe("Exame", () => {
     expect(tarefas[0].ativa).toBe(false)
     expect(tarefas[0].concluida).toBe(false)
     expect(tarefas[0].historico).toEqual([])
+  })
+
+  it("should convert ExameDTO to Exame", () => {
+    const exameDTO: ExameDTO = {
+      id: "exameId",
+      embalagem: "embalagem",
+      currentStep: 12,
+      material: Material.create({ numero: "123" }).toPersistence(),
+      status: {
+        codigo: 1,
+        data: new Date().toISOString(),
+        usuario: usuario.toPersistence(),
+      },
+    }
+
+    const exame = Exame.create(exameDTO)
+    expect(exame.id).toBe(exameDTO.id)
+    expect(exame.embalagem).toBe(exameDTO.embalagem)
+    expect(exame.currentStep).toBe(exameDTO.currentStep)
+    expect(exame.material.numero).toBe(exameDTO.material.numero)
+    expect(exame.status.codigo).toBe(exameDTO.status.codigo)
+    expect(exame.status.data.toISOString()).toBe(exameDTO.status.data)
+    expect(exame.status.usuario?.toPersistence()).toEqual(exameDTO.status.usuario)
+  })
+
+  it("should convert Exame to ExameDTO", () => {
+    let exameDTO = exame.toPersistence()
+    expect(exameDTO.id).toBe("")
+    expect(exameDTO.embalagem).toBe(exame.embalagem)
+    expect(exameDTO.currentStep).toBe(exame.currentStep)
+    expect(exameDTO.material).toEqual(exame.material.toPersistence())
+    expect(exameDTO.status.codigo).toBe(exame.status.codigo)
+    expect(exameDTO.status.data).toBe(exame.status.data.toISOString())
+    expect(exameDTO.status.usuario).toBe(null)
+    exame.status.usuario = usuario
+    exameDTO = exame.toPersistence()
+    expect(exameDTO.status.usuario).toEqual(usuario.toPersistence())
   })
 })

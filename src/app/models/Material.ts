@@ -1,4 +1,5 @@
 import { BATERIA_STATUS, TELA_STATUS } from "./listas"
+import { MaterialDTO } from "./MaterialDTO"
 
 export class Material {
   private _numero: string = ""
@@ -65,12 +66,152 @@ export class Material {
   private _is_zip_ok: boolean = false
   private _is_zip_moving: boolean = false
 
-  constructor(numero: string = "", uf: string = "GO") {
+  private constructor(numero: string, uf: string) {
     this.filterNumero(numero)
     if (!this.validateNumero()) {
       throw new Error("Número de material inválido.")
     }
     this._uf = uf.toUpperCase()
+  }
+
+  static create(materialDTO: MaterialDTO): Material {
+    materialDTO.uf = materialDTO.uf ?? "GO"
+    let material = new Material(materialDTO.numero, materialDTO.uf)
+    material._lacre = materialDTO.lacre ?? ""
+    material._recebidoLigado = materialDTO.recebidoLigado ?? false
+    material._bateria = materialDTO.bateria ?? 0
+    material._telaFuncionando = materialDTO.telaFuncionando ?? 0
+    material._recebidoModoAviao = materialDTO.recebidoModoAviao ?? false
+    material._recebidoBloqueado = materialDTO.recebidoBloqueado ?? false
+    material._senhaFornecida = materialDTO.senhaFornecida ?? false
+    material._senha = materialDTO.senha ?? ""
+    material._fotos = {
+      embalagem: [],
+      lacre: [],
+      detalhes: [],
+      simCards: [],
+      memoryCard: [],
+    }
+    if (materialDTO.fotos && materialDTO.fotos.embalagem) {
+      material._fotos.embalagem = JSON.parse(materialDTO.fotos.embalagem)
+    }
+    if (materialDTO.fotos && materialDTO.fotos.lacre) {
+      material._fotos.lacre = JSON.parse(materialDTO.fotos.lacre)
+    }
+    if (materialDTO.fotos && materialDTO.fotos.detalhes) {
+      material._fotos.detalhes = JSON.parse(materialDTO.fotos.detalhes)
+    }
+    if (materialDTO.fotos && materialDTO.fotos.simCards) {
+      material._fotos.simCards = JSON.parse(materialDTO.fotos.simCards)
+    }
+    if (materialDTO.fotos && materialDTO.fotos.memoryCard) {
+      material._fotos.memoryCard = JSON.parse(materialDTO.fotos.memoryCard)
+    }
+    material._descricao = materialDTO.descricao ?? ""
+    material._codigoEpol = materialDTO.codigoEpol ?? ""
+    material._estado_conservacao = materialDTO.estado_conservacao ?? ""
+    material._aparencia_tela = materialDTO.aparencia_tela ?? ""
+    material._funcionamento_tela = materialDTO.funcionamento_tela ?? ""
+    material._funcionamento_touch = materialDTO.funcionamento_touch ?? ""
+    material._funcionamento_botoes = materialDTO.funcionamento_botoes ?? ""
+    material._funcionamento_conector_dados = materialDTO.funcionamento_conector_dados ?? ""
+    material._outros_defeitos_observados = materialDTO.outros_defeitos_observados ?? ""
+    material._qtde_simcard = materialDTO.qtde_simcard ?? 0
+    material._simcard1_operadora = materialDTO.simcard1_operadora ?? ""
+    material._simcard1_numero = materialDTO.simcard1_numero ?? ""
+    material._simcard2_operadora = materialDTO.simcard2_operadora ?? ""
+    material._simcard2_numero = materialDTO.simcard2_numero ?? ""
+    material._simcard3_operadora = materialDTO.simcard3_operadora ?? ""
+    material._simcard3_numero = materialDTO.simcard3_numero ?? ""
+    material._qtde_memorycard = materialDTO.qtde_memorycard ?? 0
+    material._fabricante = materialDTO.fabricante ?? ""
+    material._modelo = materialDTO.modelo ?? ""
+    material._imei1 = materialDTO.imei1 ?? ""
+    material._imei2 = materialDTO.imei2 ?? ""
+    material._serial = materialDTO.serial ?? ""
+    material._is_modo_aviao = materialDTO.is_modo_aviao ?? false
+    material._is_simcard1_extracted = materialDTO.is_simcard1_extracted ?? false
+    material._is_simcard2_extracted = materialDTO.is_simcard2_extracted ?? false
+    material._is_simcard3_extracted = materialDTO.is_simcard3_extracted ?? false
+    material._is_memorycard1_extracted = materialDTO.is_memorycard1_extracted ?? false
+    material._is_memorycard2_extracted = materialDTO.is_memorycard2_extracted ?? false
+    material._is_memorycard3_extracted = materialDTO.is_memorycard3_extracted ?? false
+    material._is_inseyets_extracting = materialDTO.is_inseyets_extracting ?? false
+    material._inseyets_laped_machine = materialDTO.inseyets_laped_machine ?? ""
+    material._is_physical_analyzer_opening = materialDTO.is_physical_analyzer_opening ?? false
+    material._physical_analyzer_laped_machine = materialDTO.physical_analyzer_laped_machine ?? ""
+    material._whatsapp_physical_analyzer = materialDTO.whatsapp_physical_analyzer ?? ""
+    material._dados_usuario = materialDTO.dados_usuario ?? ""
+    material._is_iped_opening = materialDTO.is_iped_opening ?? false
+    material._is_iped_ok = materialDTO.is_iped_ok ?? false
+    material._is_zipping = materialDTO.is_zipping ?? false
+    material._is_zip_ok = materialDTO.is_zip_ok ?? false
+    material._is_zip_moving = materialDTO.is_zip_moving ?? false
+
+    return material
+  }
+
+  toPersistence(): MaterialDTO {
+    return {
+      numero: this.numero,
+      uf: this.uf,
+      codigo: this.codigo,
+      lacre: this.lacre,
+      recebidoLigado: this.recebidoLigado,
+      bateria: this.bateria,
+      telaFuncionando: this.telaFuncionando,
+      recebidoModoAviao: this.recebidoModoAviao,
+      recebidoBloqueado: this.recebidoBloqueado,
+      senhaFornecida: this.senhaFornecida,
+      senha: this.senha,
+      fotos: {
+        embalagem: this.fotos.embalagem.length > 0 ? JSON.stringify(this.fotos.embalagem) : "",
+        lacre: this.fotos.lacre.length > 0 ? JSON.stringify(this.fotos.lacre) : "",
+        detalhes: this.fotos.detalhes.length > 0 ? JSON.stringify(this.fotos.detalhes) : "",
+        simCards: this.fotos.simCards.length > 0 ? JSON.stringify(this.fotos.simCards) : "",
+        memoryCard: this.fotos.memoryCard.length > 0 ? JSON.stringify(this.fotos.memoryCard) : "",
+      },
+      descricao: this.descricao,
+      codigoEpol: this.codigoEpol,
+      estado_conservacao: this.estado_conservacao,
+      aparencia_tela: this.aparencia_tela,
+      funcionamento_tela: this.funcionamento_tela,
+      funcionamento_touch: this.funcionamento_touch,
+      funcionamento_botoes: this.funcionamento_botoes,
+      funcionamento_conector_dados: this.funcionamento_conector_dados,
+      outros_defeitos_observados: this.outros_defeitos_observados,
+      qtde_simcard: this.qtde_simcard,
+      simcard1_operadora: this.simcard1_operadora,
+      simcard1_numero: this.simcard1_numero,
+      simcard2_operadora: this.simcard2_operadora,
+      simcard2_numero: this.simcard2_numero,
+      simcard3_operadora: this.simcard3_operadora,
+      simcard3_numero: this.simcard3_numero,
+      qtde_memorycard: this.qtde_memorycard,
+      fabricante: this.fabricante,
+      modelo: this.modelo,
+      imei1: this.imei1,
+      imei2: this.imei2,
+      serial: this.serial,
+      is_modo_aviao: this.is_modo_aviao,
+      is_simcard1_extracted: this.is_simcard1_extracted,
+      is_simcard2_extracted: this.is_simcard2_extracted,
+      is_simcard3_extracted: this.is_simcard3_extracted,
+      is_memorycard1_extracted: this.is_memorycard1_extracted,
+      is_memorycard2_extracted: this.is_memorycard2_extracted,
+      is_memorycard3_extracted: this.is_memorycard3_extracted,
+      is_inseyets_extracting: this.is_inseyets_extracting,
+      inseyets_laped_machine: this.inseyets_laped_machine,
+      is_physical_analyzer_opening: this.is_physical_analyzer_opening,
+      physical_analyzer_laped_machine: this.physical_analyzer_laped_machine,
+      whatsapp_physical_analyzer: this.whatsapp_physical_analyzer,
+      dados_usuario: this.dados_usuario,
+      is_iped_opening: this.is_iped_opening,
+      is_iped_ok: this.is_iped_ok,
+      is_zipping: this.is_zipping,
+      is_zip_ok: this.is_zip_ok,
+      is_zip_moving: this.is_zip_moving,
+    }
   }
 
   get numero(): string {

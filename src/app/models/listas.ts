@@ -1,4 +1,3 @@
-import { AuthService } from "../services/auth.service"
 import { Usuario } from "./Usuario"
 
 export enum STEP {
@@ -98,7 +97,7 @@ export type Tarefa = {
 }
 
 export enum EXAME_STATUS {
-  DISPONIVEL,
-  BLOQUEADO,
-  CONCLUIDO,
+  DISPONIVEL = 0,
+  BLOQUEADO = 1,
+  CONCLUIDO = 2,
 }

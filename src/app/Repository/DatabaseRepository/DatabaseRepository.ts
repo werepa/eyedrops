@@ -1,35 +1,49 @@
 import { Injectable } from "@angular/core"
-import { AngularFirestore, CollectionReference } from "@angular/fire/compat/firestore"
+import { AngularFirestore, AngularFirestoreCollection, CollectionReference } from "@angular/fire/compat/firestore"
 import { EyedropsRepository } from "../EyedropsRepository"
 import { Exame } from "src/app/models"
 import "firebase/compat/firestore"
+import { ExameDTO } from "src/app/models/ExameDTO"
+import { firstValueFrom, map } from "rxjs"
 
 @Injectable({
   providedIn: "root",
 })
 export class DatabaseRepository implements EyedropsRepository {
-  eyedropsCollection: CollectionReference
+  eyedropsCollection: AngularFirestoreCollection
+  eyedropsCollectionRef: CollectionReference
 
-  constructor(private firestore: AngularFirestore) {
-    this.eyedropsCollection = this.firestore.collection("eyedrops").ref
-    this.getByCodigo("0123/2024 GO")
-      .then((exame) => {
-        console.log("exame", exame)
-      })
-      .catch((error) => {
-        console.error("Error getting document: ", error)
-      })
+  constructor(public firestore: AngularFirestore) {
+    this.eyedropsCollection = this.firestore.collection("eyedrops")
+    this.eyedropsCollectionRef = this.firestore.collection("eyedrops").ref
   }
-  async getByCodigo(codigo: string): Promise<any> {
+
+  async getAll(): Promise<ExameDTO[]> {
+    return firstValueFrom(
+      this.eyedropsCollection.snapshotChanges().pipe(
+        map((actions) =>
+          actions.map((a) => {
+            const data = a.payload.doc.data() as ExameDTO
+            const id = a.payload.doc.id
+            return { id, ...data }
+          })
+        )
+      )
+    )
+  }
+
+  async getByCodigo(codigo: string): Promise<ExameDTO> {
     try {
-      const eyedropsRef = this.eyedropsCollection.where("codigo", "==", codigo)
+      const materialCollectionRef = this.firestore.collection("eyedrops/exame/material").ref
+      const eyedropsRef = materialCollectionRef.where("codigo", "==", codigo)
       const eyedropsQuery = await eyedropsRef.limit(1).get()
       if (eyedropsQuery.empty) return null
-      const exame: Exame = await eyedropsQuery.docs.map(async (doc: any) => {
+      const exame: ExameDTO = await eyedropsQuery.docs.map(async (doc: any) => {
         const data: any = {
-          ...doc.data(),
           id: doc.id,
-          exame: doc.data(),
+          codigo: doc.data().codigo,
+          uf: doc.data().uf,
+          exame: doc.data().exame,
         }
         return data
       })[0]
@@ -39,21 +53,34 @@ export class DatabaseRepository implements EyedropsRepository {
       throw error
     }
   }
-  getByUF(codigo: string): Promise<any[]> {
-    throw new Error("Method not implemented.")
+
+  async getByUF(uf: string): Promise<ExameDTO[]> {
+    try {
+      const eyedropsRef = this.eyedropsCollectionRef.where("uf", "==", uf.toUpperCase())
+      const eyedropsQuery = await eyedropsRef.get()
+      if (eyedropsQuery.empty) return []
+      const exames: ExameDTO[] = eyedropsQuery.docs.map((doc: any) => {
+        const data: ExameDTO = {
+          ...doc.data(),
+          id: doc.id,
+        }
+        return data
+      })
+      return exames
+    } catch (error) {
+      console.error(`Erro ao buscar documento uf:${uf}`, error)
+      throw error
+    }
   }
 
   async save(exame: Exame): Promise<void> {
+    console.log(exame.toPersistence())
     try {
-      const query = await this.eyedropsCollection.where("codigo", "==", exame.material.codigo).get()
+      const query = await this.eyedropsCollectionRef.where("codigo", "==", exame.material.codigo).get()
       if (query.empty) {
-        console.log("save - create", query.empty)
-        await this.eyedropsCollection.doc().set({ codigo: exame.material.codigo, exame: JSON.stringify(exame) })
+        await this.eyedropsCollection.doc().set(exame.toPersistence())
       } else {
-        console.log("save - update", query.docs[0].id)
-        await this.eyedropsCollection
-          .doc(query.docs[0].id)
-          .set({ codigo: exame.material.codigo, exame: JSON.stringify(exame) })
+        await this.eyedropsCollection.doc(query.docs[0].id).set(exame.toPersistence())
       }
     } catch (error) {
       console.error("Erro ao criar o documento:", error)

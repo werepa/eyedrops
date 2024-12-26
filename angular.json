@@ -27,7 +27,7 @@
               {
                 "glob": "**/*",
                 "input": "public",
-                "src/assets"
+                "output": "src/assets"
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
@@ -82,7 +82,7 @@
               {
                 "glob": "**/*",
                 "input": "public",
-                "src/assets"
+                "output": "src/assets"
               }
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],

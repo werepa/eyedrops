@@ -24,7 +24,6 @@ import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout"
 import { addIcons } from "ionicons"
 import { addOutline, camera, cameraOutline, checkmarkOutline, printOutline, syncOutline, trashOutline } from "ionicons/icons"
 import { BATERIA_STATUS, STEP, TAREFAS, TELA_STATUS } from "../models/listas"
-import { AuthService } from "../services/auth.service"
 import { GaleriaFotosComponent } from "../galeria-fotos/galeria-fotos.component"
 import { defineCustomElements } from "@ionic/pwa-elements/loader"
 import { environment } from "src/environments/environment"
@@ -178,7 +177,8 @@ export class MainPage implements OnInit {
   }
 
   onChangeUsuarioAtual(usuario: Usuario) {
-    this.state.update((s) => ({ ...s, usuarioAtual: usuario }))
+    this.exameService.changeUsuarioAtual(usuario)
+    // this.state.update((s) => ({ ...s, usuarioAtual: usuario }))
   }
 
   onChangeExameAtual(exame: Exame) {
@@ -211,7 +211,7 @@ export class MainPage implements OnInit {
     const listaExames = this.state().listaExames
     let exame = listaExames.find((exame) => exame.material.equal(material))
     if (!exame) {
-      exame = new Exame(material)
+      exame = Exame.create({ material: material.toPersistence() })
       listaExames.push(exame)
     }
     if (!this.state().exameAtual) this.state.update((s) => ({ ...s, exameAtual: exame }))
@@ -274,7 +274,7 @@ export class MainPage implements OnInit {
     let primeiroMaterial: any
     const embalagem = uuidv4()
     this.getMateriaisControls().forEach((m) => {
-      const material = new Material(m.get("numero")?.value, m.get("uf")?.value)
+      const material = Material.create({ numero: m.get("numero")?.value, uf: m.get("uf")?.value })
       const existeMaterial = this.state().listaExames.some((exame) => exame.material.equal(material))
       const exame = this.getExame(material)
       if (!exame.embalagem) exame.embalagem = embalagem
