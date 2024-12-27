@@ -101,11 +101,7 @@ describe("Exame", () => {
       embalagem: "embalagem",
       currentStep: 12,
       material: Material.create({ numero: "123" }).toPersistence(),
-      status: {
-        codigo: 1,
-        data: new Date().toISOString(),
-        usuario: usuario.toPersistence(),
-      },
+      updatedAt: new Date(),
     }
 
     const exame = Exame.create(exameDTO)
@@ -113,9 +109,7 @@ describe("Exame", () => {
     expect(exame.embalagem).toBe(exameDTO.embalagem)
     expect(exame.currentStep).toBe(exameDTO.currentStep)
     expect(exame.material.numero).toBe(exameDTO.material.numero)
-    expect(exame.status.codigo).toBe(exameDTO.status.codigo)
-    expect(exame.status.data.toISOString()).toBe(exameDTO.status.data)
-    expect(exame.status.usuario?.toPersistence()).toEqual(exameDTO.status.usuario)
+    expect(exame.updatedAt).toEqual(exameDTO.updatedAt)
   })
 
   it("should convert Exame to ExameDTO", () => {
@@ -123,11 +117,6 @@ describe("Exame", () => {
     expect(exameDTO.embalagem).toBe(exame.embalagem)
     expect(exameDTO.currentStep).toBe(exame.currentStep)
     expect(exameDTO.material).toEqual(exame.material.toPersistence())
-    expect(exameDTO.status.codigo).toBe(exame.status.codigo)
-    expect(exameDTO.status.data).toBe(exame.status.data.toISOString())
-    expect(exameDTO.status.usuario).toBe(null)
-    exame.status.usuario = usuario
-    exameDTO = exame.toPersistence()
-    expect(exameDTO.status.usuario).toEqual(usuario.toPersistence())
+    expect(exameDTO.updatedAt).toEqual(exame.updatedAt)
   })
 })

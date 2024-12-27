@@ -8,15 +8,7 @@ export class Exame {
   private _tarefas: Tarefa[] = []
   private _currentStep: STEP = STEP.RECEBER_MATERIAL
   private _material: Material
-  private _status: {
-    codigo: EXAME_STATUS
-    data: Date
-    usuario: Usuario
-  } = {
-    codigo: EXAME_STATUS.BLOQUEADO,
-    data: new Date(),
-    usuario: null,
-  }
+  private _updatedAt: Date
 
   private constructor(material: Material) {
     this.material = material
@@ -28,11 +20,7 @@ export class Exame {
     exame._id = exameDTO.id
     exame.embalagem = exameDTO.embalagem ?? ""
     exame.currentStep = exameDTO.currentStep ?? STEP.RECEBER_MATERIAL
-    exame.status = {
-      codigo: exameDTO.status?.codigo ?? EXAME_STATUS.BLOQUEADO,
-      data: exameDTO.status?.data ? new Date(exameDTO.status?.data) : new Date(),
-      usuario: exameDTO.status?.usuario ? Usuario.create(exameDTO.status.usuario) : null,
-    }
+    exame._updatedAt = exameDTO.updatedAt ? new Date(exameDTO.updatedAt) : new Date()
     return exame
   }
 
@@ -43,11 +31,7 @@ export class Exame {
       embalagem: this.embalagem,
       currentStep: this.currentStep,
       material: this.material?.toPersistence(),
-      status: {
-        codigo: this.status.codigo,
-        data: this.status.data.toISOString(),
-        usuario: this.status.usuario?.toPersistence() ?? null,
-      },
+      updatedAt: new Date(),
     }
   }
 
@@ -55,12 +39,8 @@ export class Exame {
     return this._id
   }
 
-  get status(): any {
-    return this._status
-  }
-
-  set status(status: any) {
-    this._status = status
+  get updatedAt(): Date {
+    return this._updatedAt
   }
 
   get material(): Material {

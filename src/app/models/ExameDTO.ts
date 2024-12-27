@@ -1,5 +1,4 @@
 import { MaterialDTO } from "./MaterialDTO"
-import { UsuarioDTO } from "./UsuarioDTO"
 
 export interface ExameDTO {
   id?: string
@@ -8,9 +7,5 @@ export interface ExameDTO {
   embalagem?: string
   currentStep?: number
   material: MaterialDTO
-  status?: {
-    codigo?: number
-    data?: string
-    usuario?: UsuarioDTO
-  }
+  updatedAt?: Date
 }

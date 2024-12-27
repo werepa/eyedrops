@@ -4,8 +4,9 @@ import { DatabaseRepository } from "../Repository"
 import "firebase/firestore"
 import { AngularFireModule } from "@angular/fire/compat"
 import { AngularFirestoreModule } from "@angular/fire/compat/firestore"
+import { Exame, Material, STEP } from "../models"
 
-xdescribe("ExameService", () => {
+describe("ExameService", () => {
   let service: ExameService
   const firebaseConfig = {
     apiKey: "AIzaSyDpMfldg10XJfdkap0lsQkfaFTzbVTv3Lo",
@@ -25,5 +26,27 @@ xdescribe("ExameService", () => {
     await service.repository.truncate()
   })
 
-  it("should block a document", async () => {})
+  it("should list differences between two exameDTO", () => {
+    const exame1 = Exame.create({ material: Material.create({ numero: "123/2024" }).toPersistence() }).toPersistence()
+    const lastUpdate = new Date(new Date().getTime() + 10000)
+    const exame2 = {
+      ...exame1,
+      currentStep: STEP.VERIFICAR_FUNCIONAMENTO_TELA,
+      material: { ...exame1.material, lacre: "123456" },
+      updatedAt: lastUpdate,
+    }
+    const differences = service.listDifferences(exame1, exame2)
+
+    expect(
+      differences.sort((a, b) => {
+        if (a.field < b.field) return -1
+        if (a.field > b.field) return 1
+        return 0
+      })
+    ).toEqual([
+      { field: "currentStep", oldValue: STEP.RECEBER_MATERIAL, newValue: STEP.VERIFICAR_FUNCIONAMENTO_TELA },
+      { field: "material.lacre", oldValue: "", newValue: "123456" },
+      { field: "updatedAt", oldValue: exame1.updatedAt, newValue: lastUpdate },
+    ])
+  })
 })
