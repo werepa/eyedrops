@@ -34,16 +34,13 @@ export class DatabaseRepository implements EyedropsRepository {
 
   async getByCodigo(codigo: string): Promise<ExameDTO> {
     try {
-      const materialCollectionRef = this.firestore.collection("eyedrops/exame/material").ref
-      const eyedropsRef = materialCollectionRef.where("codigo", "==", codigo)
+      const eyedropsRef = this.eyedropsCollectionRef.where("codigo", "==", codigo)
       const eyedropsQuery = await eyedropsRef.limit(1).get()
       if (eyedropsQuery.empty) return null
       const exame: ExameDTO = await eyedropsQuery.docs.map(async (doc: any) => {
         const data: any = {
           id: doc.id,
-          codigo: doc.data().codigo,
-          uf: doc.data().uf,
-          exame: doc.data().exame,
+          ...doc.data(),
         }
         return data
       })[0]
@@ -61,8 +58,8 @@ export class DatabaseRepository implements EyedropsRepository {
       if (eyedropsQuery.empty) return []
       const exames: ExameDTO[] = eyedropsQuery.docs.map((doc: any) => {
         const data: ExameDTO = {
-          ...doc.data(),
           id: doc.id,
+          ...doc.data(),
         }
         return data
       })
@@ -74,13 +71,12 @@ export class DatabaseRepository implements EyedropsRepository {
   }
 
   async save(exame: Exame): Promise<void> {
-    console.log(exame.toPersistence())
     try {
-      const query = await this.eyedropsCollectionRef.where("codigo", "==", exame.material.codigo).get()
-      if (query.empty) {
+      const exists = await this.getByCodigo(exame.material.codigo)
+      if (!exists) {
         await this.eyedropsCollection.doc().set(exame.toPersistence())
       } else {
-        await this.eyedropsCollection.doc(query.docs[0].id).set(exame.toPersistence())
+        await this.eyedropsCollection.doc(exists.id).set(exame.toPersistence())
       }
     } catch (error) {
       console.error("Erro ao criar o documento:", error)

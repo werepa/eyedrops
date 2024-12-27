@@ -38,7 +38,8 @@ export class Exame {
 
   toPersistence(): ExameDTO {
     return {
-      id: this.id ?? "",
+      codigo: this.material.codigo,
+      uf: this.material.uf,
       embalagem: this.embalagem,
       currentStep: this.currentStep,
       material: this.material?.toPersistence(),

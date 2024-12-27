@@ -9,10 +9,6 @@ describe("Material", () => {
     material = Material.create({ numero: "0001/2021" })
   })
 
-  it("should create an instance", () => {
-    expect(material).toBeTruthy()
-  })
-
   it("should accept a valid number greater than 0", () => {
     const material = Material.create({ numero: "1" })
     expect(material.numero).toBe(`0001/${currentYear}`)
@@ -84,6 +80,7 @@ describe("Material", () => {
     const materialDTO: MaterialDTO = {
       numero: "0001/2023",
       uf: "SP",
+      codigo: "0001/2023 SP",
       lacre: "123456",
       recebidoLigado: true,
       bateria: 1,

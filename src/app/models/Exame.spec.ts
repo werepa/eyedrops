@@ -120,7 +120,6 @@ describe("Exame", () => {
 
   it("should convert Exame to ExameDTO", () => {
     let exameDTO = exame.toPersistence()
-    expect(exameDTO.id).toBe("")
     expect(exameDTO.embalagem).toBe(exame.embalagem)
     expect(exameDTO.currentStep).toBe(exame.currentStep)
     expect(exameDTO.material).toEqual(exame.material.toPersistence())

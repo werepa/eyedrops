@@ -57,6 +57,7 @@ describe("DatabaseRepository", () => {
     const material = Material.create({ numero: "123/24" })
     await component.save(Exame.create({ material: material.toPersistence() }))
     const exameDTO: ExameDTO = await component.getByCodigo("0123/2024 GO")
+    expect(exameDTO.codigo).toBe("0123/2024 GO")
     expect(exameDTO.material.codigo).toBe("0123/2024 GO")
   })
 
