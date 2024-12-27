@@ -4,7 +4,7 @@ import { DatabaseRepository } from "../Repository"
 import "firebase/firestore"
 import { AngularFireModule } from "@angular/fire/compat"
 import { AngularFirestoreModule } from "@angular/fire/compat/firestore"
-import { Exame, Material, STEP } from "../models"
+import { Exame, Material, STEP, Usuario } from "../models"
 
 describe("ExameService", () => {
   let service: ExameService
@@ -24,6 +24,18 @@ describe("ExameService", () => {
     })
     service = TestBed.inject(ExameService)
     await service.repository.truncate()
+  })
+
+  it("should get documents after user login", async () => {
+    service.repository.save(Exame.create({ material: Material.create({ numero: "123/2024" }).toPersistence() }))
+    service.repository.save(Exame.create({ material: Material.create({ numero: "124/2024" }).toPersistence() }))
+    service.repository.save(Exame.create({ material: Material.create({ numero: "125/2024" }).toPersistence() }))
+    service.repository.save(Exame.create({ material: Material.create({ numero: "26/2024", uf: "DF" }).toPersistence() }))
+    service.repository.save(Exame.create({ material: Material.create({ numero: "27/2024", uf: "DF" }).toPersistence() }))
+    expect(service.state().listaExames.length).toBe(0)
+    const usuarioAtual = Usuario.create({ codigo: "0000", nome: "Castro", perfil: "Perito", uf: "GO" })
+    await service.changeUsuarioAtual(usuarioAtual)
+    expect(service.state().listaExames.length).toBe(3)
   })
 
   it("should list differences between two exameDTO", () => {

@@ -70,7 +70,7 @@ export class MainPage implements OnInit {
   state: WritableSignal<ExameState>
   listaPessoas: Usuario[] = this.exameService.getListaPessoas()
 
-  constructor(private exameService: ExameService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
+  constructor(public exameService: ExameService, private fb: FormBuilder, private breakpointObserver: BreakpointObserver) {
     this.state = this.exameService.state
     addIcons({ camera, cameraOutline, checkmarkOutline, trashOutline, addOutline, printOutline, syncOutline })
   }
@@ -99,6 +99,10 @@ export class MainPage implements OnInit {
     this.selectedTab = "fluxo"
     this.state.update((s) => ({ ...s, exameAtual: null }))
     this.mostrarBateria = false
+  }
+
+  async saveExame(exame: Exame) {
+    await this.exameService.saveExame(exame)
   }
 
   //sincroniza dados com Firebase
@@ -176,19 +180,18 @@ export class MainPage implements OnInit {
     if (this.state().exameAtual.checkIsFinished()) this.mostrarTarefasConcluidas = true
   }
 
-  onChangeUsuarioAtual(usuario: Usuario) {
-    this.exameService.changeUsuarioAtual(usuario)
-    // this.state.update((s) => ({ ...s, usuarioAtual: usuario }))
+  async onChangeUsuarioAtual(usuario: Usuario) {
+    await this.exameService.changeUsuarioAtual(usuario)
   }
 
   onChangeExameAtual(exame: Exame) {
-    this.state.update((s) => ({ ...s, exameAtual: exame }))
+    this.exameService.changeExameAtual(exame)
   }
 
   onChangeMaterialAtual(material: Material) {
     const ultExame = this.state().exameAtual
     const exame = this.getExame(material)
-    this.state.update((s) => ({ ...s, exameAtual: exame }))
+    this.exameService.changeExameAtual(exame)
     if (ultExame === exame) this.tabAtual = "fluxo"
     if (ultExame === exame) this.selectedTab = "fluxo"
   }
@@ -213,6 +216,7 @@ export class MainPage implements OnInit {
     if (!exame) {
       exame = Exame.create({ material: material.toPersistence() })
       listaExames.push(exame)
+      this.exameService.listaExamesInicial.push(exame)
     }
     if (!this.state().exameAtual) this.state.update((s) => ({ ...s, exameAtual: exame }))
     return exame
@@ -748,8 +752,8 @@ export class MainPage implements OnInit {
     return usuarioAtual ? usuarioAtual.nome : "Selecione o responsável"
   }
 
-  setUsuarioAtual(usuario: Usuario) {
-    this.onChangeUsuarioAtual(usuario)
+  async setUsuarioAtual(usuario: Usuario) {
+    await this.onChangeUsuarioAtual(usuario)
     this.setModalPessoasOpen(false)
     const materialArray = this.form.get("materiais") as FormArray
     if (!materialArray.controls.length) this.addMaterialControl()

@@ -15,7 +15,7 @@ export class ExameService {
     usuarioAtual: null,
     exameAtual: null,
   })
-  exameInicial: ExameState = { ...this.state() }
+  listaExamesInicial: Exame[] = []
 
   constructor(@Inject("EYEDROPS_REPOSITORY") public repository: EyedropsRepository) {}
 
@@ -79,11 +79,33 @@ export class ExameService {
     return listaPessoas
   }
 
-  changeUsuarioAtual(usuario: Usuario) {
+  async saveExame(exame: Exame) {
+    await this.repository.save(exame)
+    this.state.update((state) => {
+      state.listaExames = [...state.listaExames, exame]
+      return state
+    })
+  }
+
+  async refreshListaExames(): Promise<void> {
+    const uf = this.state().usuarioAtual?.uf
+    const examesDTO = await this.repository.getByUF(uf)
+    const exames = []
+    for (const exameDTO of examesDTO) {
+      exames.push(Exame.create(exameDTO))
+    }
+    this.state.update((state) => {
+      state.listaExames = [...exames]
+      return state
+    })
+  }
+
+  async changeUsuarioAtual(usuario: Usuario) {
     this.state.update((state) => {
       state.usuarioAtual = usuario
       return state
     })
+    await this.refreshListaExames()
   }
 
   changeExameAtual(exame: Exame) {

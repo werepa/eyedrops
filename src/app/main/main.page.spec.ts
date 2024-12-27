@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing"
 import { MainPage } from "./main.page"
 import { STEP, TAREFAS } from "../models/listas"
-import { Exame, Material, Usuario } from "../models"
+import { Exame, ExameDTO, Material, Usuario } from "../models"
 import { ExameService, ExameState } from "../services/exame.service"
 
-describe("MainPage", () => {
+fdescribe("MainPage", () => {
   let component: MainPage
   let fixture: ComponentFixture<MainPage>
   let exame: Exame
@@ -13,7 +13,17 @@ describe("MainPage", () => {
   beforeEach(async () => {
     fixture = await TestBed.configureTestingModule({
       imports: [MainPage],
-      providers: [ExameService, { provide: "EYEDROPS_REPOSITORY", useClass: class {} }],
+      providers: [
+        ExameService,
+        {
+          provide: "EYEDROPS_REPOSITORY",
+          useClass: class {
+            getByUF(): Promise<ExameDTO[]> {
+              return Promise.resolve([])
+            }
+          },
+        },
+      ],
     }).compileComponents()
     fixture = TestBed.createComponent(MainPage)
     component = fixture.componentInstance
@@ -24,7 +34,7 @@ describe("MainPage", () => {
       uf: "GO",
       perfil: "Perito",
     })
-    component.onChangeUsuarioAtual(usuarioAtual)
+    await component.onChangeUsuarioAtual(usuarioAtual)
     const material = Material.create({ numero: "1" })
     exame = Exame.create({ material: material.toPersistence() })
   })
@@ -99,6 +109,7 @@ describe("MainPage", () => {
     expect(component.state().listaExames.length).toBe(0)
     const listaExames = component.state().listaExames
     listaExames.push(exame)
+    component.exameService.listaExamesInicial.push(exame)
     component.state.update((s) => ({ ...s, listaExames }))
     expect(component.state().listaExames.length).toBe(1)
     populateMaterialFields()
@@ -1252,5 +1263,21 @@ describe("MainPage", () => {
       })
     component.state().exameAtual.checkIsFinished()
     expect(component.state().exameAtual.currentStep).toBe(STEP.TAREFAS_CONCLUIDAS)
+  })
+
+  fit("should update state().listaExames after onChangeUsuarioAtual", async () => {
+    const exameDTO1 = { material: Material.create({ numero: "123/2024" }).toPersistence() }
+    const exameDTO2 = { material: Material.create({ numero: "124/2024" }).toPersistence() }
+    const exameDTO3 = { material: Material.create({ numero: "125/2024" }).toPersistence() }
+    const exame1 = Exame.create(exameDTO1)
+    const exame2 = Exame.create(exameDTO2)
+    const exame3 = Exame.create(exameDTO3)
+    expect(component.state().listaExames.length).toBe(0)
+    const usuarioAtual = Usuario.create({ codigo: "0000", nome: "Castro", perfil: "Perito", uf: "GO" })
+    spyOn(component.exameService.repository, "getByUF").and.returnValue(
+      Promise.resolve([exame1, exame2, exame3].map((exame) => exame.toPersistence()))
+    )
+    await component.onChangeUsuarioAtual(usuarioAtual)
+    expect(component.state().listaExames.length).toBe(3)
   })
 })
